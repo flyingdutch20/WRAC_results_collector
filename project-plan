@@ -1,0 +1,13 @@
+Tote placepot figures
+get sample pages
+be able to extract the data from the pages
+
+Racing post racecards
+get sample pages
+be able to extract meeting and racecards from pages
+
+Create meeting and racecards objects from Racing Post
+Map Tote Placepot pages
+Store as JSON
+
+Create routine to automatically scrape pages at the right times
