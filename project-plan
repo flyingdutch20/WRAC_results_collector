@@ -11,3 +11,20 @@ Map Tote Placepot pages
 Store as JSON
 
 Create routine to automatically scrape pages at the right times
+
+Racing post racecard index
+https://www.racingpost.com/racecards/
+
+html = urlopen("https://www.racingpost.com/racecards/")
+output = open("racingpost_index.html", "wb")
+output.writelines(html.readlines())
+output.close()
+
+div class=RC-accordion
+data-accordion-name="RC-accordion_byMeeting"
+each meeting
+    <section class="ui-accordion__row">
+    read meeting details - location, start time, number of races, going
+    each race
+        <div class="RC-meetingItem">
+        read race details - race id, date, race time, url, title, RC-courseCards__going, number of runners
