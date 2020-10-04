@@ -7,6 +7,9 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from datetime import date
 import os
+import requests
+import json
+import pickle
 
 infile = open('courselist.txt')
 global courselist
@@ -64,37 +67,71 @@ class Nag:
         self.race_comment = ""
         self.pp_pool = 0
 
-
-def getpage(url, name):
-    html = urlopen(url)
+def writepage(text, name):
     if not os.path.isdir("./pages"):
         os.mkdir("./pages")
     today = date.today().strftime('%Y-%m-%d')
     if not os.path.isdir("./pages/"+today):
         os.mkdir("./pages/"+today)
     pathname = "pages/" + today + "/" + name + ".html"
-    output = open(pathname, "wb")
-    output.writelines(html.readlines())
-    output.close()
-    return open(pathname).read()
+    with open(pathname, "w") as output:
+        output.write(text)
+
+def writemtg(mtg):
+    if not os.path.isdir("./meetings"):
+        os.mkdir("./meetings")
+    today = date.today().strftime('%Y-%m-%d')
+    mtgkey = today + "-" + mtg.name
+    pathname = "meetings/" + mtgkey
+    with open(pathname + ".picle", "wb") as f:
+        pickle.dump(mtg, f, pickle.HIGHEST_PROTOCOL)
+    ser = mtg.__dict__
+    cards = []
+    for card in mtg.races:
+        nags = []
+        for nag in card.nags:
+            nags.append(nag.__dict__)
+        carddict = card.__dict__
+        carddict["nags"] = nags
+        cards.append(carddict)
+    ser["races"] = cards
+    dict = {mtgkey : ser}
+    with open(pathname + ".json", "w") as output:
+        json.dump(dict, output)
+
+def getpage(url, name):
+    r = requests.get(url)
+    if r.raise_for_status() != None:
+        print(f"Error getting {url} - {name}")
+        return ""
+    html = r.text
+    writepage(html, name)
+    return html
+
+def find_or_empty(bs, key, search):
+    if bs == None:
+        return ""
+    s = bs.find(key, {"class":search})
+    return s.text.strip() if s != None else ""
 
 
 def extract_rp_nag(raw_nag):
     nag = Nag()
-#    nag.rp_id = raw_nag.find("div", {"class":"RC-runnerRow"})["data-ugc-runnerid"]
-    nag.name = raw_nag.find("a", {"class":"RC-runnerName"}).text.strip()
-    nag.no = raw_nag.find("span", {"class":"RC-runnerNumber__no"}).text.strip()
-    nag.draw = raw_nag.find("span", {"class":"RC-runnerNumber__draw"}).text.strip()
-#    nag.lastrun = raw_nag.find("div", {"class":"RC-runnerStats__lastRun"}).text.strip()
-    nag.form = raw_nag.find("span", {"class":"RC-runnerInfo__form"}).text.strip()
-    nag.age = raw_nag.find("span", {"class":"RC-runnerAge"}).text.strip()
-#    jockey_outer = raw_nag.find("div", {"class":"RC-runnerInfo__jockey"})
-#    nag.jockey = jockey_outer.find("a", {"class":"RC-runnerInfo__name"}).text.strip()
-#    trainer_outer = raw_nag.find("div", {"class":"RC-runnerInfo__trainer"})
-#    nag.trainer = trainer_outer.find("a", {"class":"RC-runnerInfo__name"}).text.strip()
-    nag.ts = raw_nag.find("span", {"class":"RC-runnerTs"}).text.strip()
-    nag.rpr = raw_nag.find("span", {"class":"RC-runnerRpr"}).text.strip()
-#    nag.rp_comment = raw_nag.find("div", {"class":"RC-comments_content"}).text.strip()
+    nag.rp_id = raw_nag["data-ugc-runnerid"]
+    nag.name = find_or_empty(raw_nag, "a", "RC-runnerName")
+    nag.no = find_or_empty(raw_nag, "span", "RC-runnerNumber__no")
+    nag.draw = find_or_empty(raw_nag, "span", "RC-runnerNumber__draw")
+    nag.lastrun = find_or_empty(raw_nag, "div", "RC-runnerStats__lastRun")
+    nag.form = find_or_empty(raw_nag, "span", "RC-runnerInfo__form")
+    nag.age = find_or_empty(raw_nag, "span", "RC-runnerAge")
+    jockey_outer = raw_nag.find("div", {"class":"RC-runnerInfo_jockey"})
+    nag.jockey = find_or_empty(jockey_outer, "a", "RC-runnerInfo__name")
+    trainer_outer = raw_nag.find("div", {"class":"RC-runnerInfo_trainer"})
+    nag.trainer = find_or_empty(trainer_outer, "a", "RC-runnerInfo__name")
+    nag.ts = find_or_empty(raw_nag, "span", "RC-runnerTs")
+    nag.rpr = find_or_empty(raw_nag, "span", "RC-runnerRpr")
+    nag.rp_comment = find_or_empty(raw_nag, "div", "RC-comments__content")
+    return nag
 
 
 def extract_rp_runners(card):
@@ -112,7 +149,7 @@ def extract_rp_runners(card):
     raw_nags = runners_bs.findAll("div", {"class":"RC-runnerRow"})
     for raw_nag in raw_nags:
         nag = extract_rp_nag(raw_nag)
-        card.nags.append(nag)
+        card.nags.append(nag) if nag != None else None
     
 
 def extract_rp_racecard(raw_card, mtg):
@@ -155,7 +192,9 @@ def read_racingpost_index():
     meetings = []
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg)
-        meetings.append(mtg) if mtg != None else None
+        if mtg != None:
+            writemtg(mtg)
+            meetings.append(mtg)
 # save meetings
 
 
