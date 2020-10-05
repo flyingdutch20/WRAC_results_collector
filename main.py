@@ -6,10 +6,13 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from datetime import date
+from fractions import Fraction
 import os
 import requests
 import json
 import pickle
+
+demo_odds = Fraction("5/2")
 
 infile = open('courselist.txt')
 global courselist
@@ -169,6 +172,17 @@ def extract_rp_racecard(raw_card, mtg):
 
 def extract_rp_meeting(raw_mtg):
     name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0]
+    racecount = 0
+    racecount_bs = raw_mtg.find("span", {"class": "RC-accordion__raceCount"})
+    if racecount_bs == None:
+        return None
+    try:
+        racecount_str = racecount_bs.text.split()[0]
+        racecount = int(racecount_str)
+    except:
+        return None
+    if racecount < 6:
+        return None
     if not name.upper() in courselist:
         return None
     if raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) != None:
@@ -176,7 +190,7 @@ def extract_rp_meeting(raw_mtg):
     mtg = Meeting()
     mtg.name = name
     print(f"Collecting {name}")
-    mtg.date = str(date.today())
+    mtg.race_date = str(date.today())
     mtg.start = raw_mtg.find("span", {"data-test-selector":"RC-accordion__firstRaceTime"}).text.strip()
     mtg.type = raw_mtg.find("span", {"class":"RC-accordion__meetingType"}).text.strip()
     mtg.going = raw_mtg.find("div", {"class":"RC-courseDescription__info"}).text.strip()
