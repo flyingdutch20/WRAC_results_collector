@@ -181,11 +181,15 @@ def extract_rp_meeting(raw_mtg):
         racecount = int(racecount_str)
     except:
         return None
-    if racecount < 6:
-        return None
-    if not name.upper() in courselist:
-        return None
-    if raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) != None:
+#    if racecount < 6:
+#        return None
+#    if not name.upper() in courselist:
+#        return None
+#    if raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) != None:
+#        return None
+    if racecount < 6 or \
+            name.upper() not in courselist or \
+            raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) is not None:
         return None
     mtg = Meeting()
     mtg.name = name

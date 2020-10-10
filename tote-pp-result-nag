@@ -1,0 +1,28 @@
+<tr data-testid="racecard-1-placed-desktop-row-216249" class="table-row__StyledTableRow-az917f-0 iKkfxO shared-styles__RacecardTableRow-sc-1vv854j-2 jJiuzn">
+<td data-testid="" class="table-cell__StyledTableCell-sc-1po7l0g-0 bRnZAG shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE" title="">
+<div class="numbers">
+<div class="horse-number" title="saddlecloth number">5</div>
+<div class="gate-number" title="draw number">0</div>
+<svg type="image/svg+xml" data-testid="racecard-1-placed-desktop-row-216249-hide-show-spotlight" fill="primary" src="/static/media/arrow-up.5c7a28eb.svg" class="icon__StyledSvg-irgm4m-0 cMOAZd icon " alt="hide spotlight" title="hide spotlight">
+<title>hide spotlight</title>
+<use xlink:href="/static/media/arrow-up.5c7a28eb.svg#Layer_1"></use>
+</svg></div></td>
+<td data-testid="" class="table-cell__StyledTableCell-sc-1po7l0g-0 bRnZAG shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE silk" title="">
+<img data-testid="silk" src="https://tote-images-green.tote.live/silk/7%2F7%2F5%2F238577" alt="silk"></td>
+<td data-testid="" class="table-cell__StyledTableCell-sc-1po7l0g-0 dPohyI shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE horse-jockey-trainer" title="" colspan="3">
+<div class="finishing-position" data-testid="racecard-1-placed-desktop-row-216249-finishing-position">1st </div>
+<div class="horse-name" data-testid="racecard-1-placed-desktop-row-216249-horse-name">El Kaldoun</div>
+<div class="jockey-and-trainer"><span class="jockey" data-testid="jockey-and-trainer-jockey"><b>J </b>J McGrath</span><span class="trainer" data-testid="jockey-and-trainer-trainer"><b>T </b>N J Henderson</span></div></td>
+<td data-testid="selection-extra-form-figures" class="table-cell__StyledTableCell-sc-1po7l0g-0 dPohyI shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE numeric" title="">
+<div class="row-cells__Form-sc-1ylbfy-0 faFfkA">/5260-</div></td><td data-testid="selection-extra-official-rating-today" class="table-cell__StyledTableCell-sc-1po7l0g-0 dPohyI shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE numeric" title="">110</td>
+<td data-testid="selection-extra-prices" class="table-cell__StyledTableCell-sc-1po7l0g-0 dPohyI shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE numeric" title="">
+<div class="row-cells__GuidePrice-sc-1ylbfy-1 iawAZj align-center">
+<div class="arrow"></div>
+<div>13/2</div>
+</div></td>
+<td data-testid="" class="table-cell__StyledTableCell-sc-1po7l0g-0 bRnZAG shared-styles__RacecardTableCell-sc-1vv854j-4 irCFHE" title="">
+<div class="bar__StyledBar-sc-16bahq3-1 UBSBH" width="11" data-testid="racecard-1-placed-desktop-row-216249-extra-element-0-bar">
+<div class="background">
+<div class="value"></div>
+</div>
+<div class="numerics"><span class="number">7030.98</span>&nbsp;<span class="perCent">(11%)</span></div></div></td></tr>
