@@ -18,6 +18,17 @@ infile = open('courselist.txt')
 global courselist
 courselist = infile.read().split("\n")
 
+
+infile = open('courselist_tote.txt')
+global courselist_dict
+courselist_dict = {}
+for line in infile.read().split("\n"):
+    words = line.split()
+    if len(words) > 1:
+        courselist_dict[words[0].strip().lower()] = words[1].strip().lower()
+    else:
+        courselist_dict[words[0].strip().lower()] = words[0].strip().lower()
+
 class Meeting:
     def __init__(self):
         self.name = ""
@@ -188,7 +199,7 @@ def extract_rp_meeting(raw_mtg):
 #    if raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) != None:
 #        return None
     if racecount < 6 or \
-            name.upper() not in courselist or \
+            name.lower() not in courselist_dict.keys() or \
             raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) is not None:
         return None
     mtg = Meeting()
