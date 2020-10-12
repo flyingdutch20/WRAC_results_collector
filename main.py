@@ -14,11 +14,6 @@ import pickle
 
 demo_odds = Fraction("5/2")
 
-infile = open('courselist.txt')
-global courselist
-courselist = infile.read().split("\n")
-
-
 infile = open('courselist_tote.txt')
 global courselist_dict
 courselist_dict = {}
@@ -56,6 +51,8 @@ class Racecard:
         self.pp_nr = 0
         self.pp_pool = 0
         self.nags = []
+        self.totepp_url = ""
+        self.leg = 0
 
 class Nag:
     def __init__(self):
@@ -129,6 +126,14 @@ def find_or_empty(bs, key, search):
     return s.text.strip() if s != None else ""
 
 
+def build_tote_url(race):
+    racetime = race.race_time.split(":")
+    if int(racetime[0]) < 12:
+        racetime[0] = str(int(racetime[0]) + 12)
+    tote_coursename = courselist_dict[race.mtgname]
+    return f"https://tote.co.uk/results/{tote_coursename}/{racetime[0]}:{racetime[1]}/placepot"
+
+
 def extract_rp_nag(raw_nag):
     nag = Nag()
     nag.rp_id = raw_nag["data-ugc-runnerid"]
@@ -166,9 +171,10 @@ def extract_rp_runners(card):
         card.nags.append(nag) if nag != None else None
     
 
-def extract_rp_racecard(raw_card, mtg):
+def extract_rp_racecard(raw_card, mtg, leg):
     card = Racecard()
     card.mtgname = mtg.name
+    card.leg = leg
     card.name = raw_card.find("span", {"class":"RC-meetingItem__info"}).text.strip()
     card.rp_id = raw_card.find("a", {"class":"RC-meetingItem__link"})["data-race-id"]
     card.rp_url = raw_card.find("a", {"class":"RC-meetingItem__link"})["href"]
@@ -177,12 +183,13 @@ def extract_rp_racecard(raw_card, mtg):
     card.race_class = " ".join(words[0:-1])
     card.distance = words[-1]
     card.field = raw_card.find("span", {"class":"RC-meetingItem__numberOfRunners"}).text.strip()
+    card.totepp_url = build_tote_url(card)
     extract_rp_runners(card)
     return card
 
 
 def extract_rp_meeting(raw_mtg):
-    name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0]
+    name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0].lower()
     racecount = 0
     racecount_bs = raw_mtg.find("span", {"class": "RC-accordion__raceCount"})
     if racecount_bs == None:
@@ -192,14 +199,8 @@ def extract_rp_meeting(raw_mtg):
         racecount = int(racecount_str)
     except:
         return None
-#    if racecount < 6:
-#        return None
-#    if not name.upper() in courselist:
-#        return None
-#    if raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) != None:
-#        return None
     if racecount < 6 or \
-            name.lower() not in courselist_dict.keys() or \
+            name not in courselist_dict.keys() or \
             raw_mtg.find("span", {"class": "RC-accordion__abandonedLabel"}) is not None:
         return None
     mtg = Meeting()
@@ -211,7 +212,8 @@ def extract_rp_meeting(raw_mtg):
     mtg.going = raw_mtg.find("div", {"class":"RC-courseDescription__info"}).text.strip()
     raw_racecards = raw_mtg.findAll("div", {"class":"RC-meetingItem"})
     for raw_racecard in raw_racecards:
-        racecard = extract_rp_racecard(raw_racecard, mtg)
+        leg += 1
+        racecard = extract_rp_racecard(raw_racecard, mtg, leg)
         mtg.races.append(racecard)
     return mtg
 

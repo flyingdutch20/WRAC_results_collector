@@ -5,9 +5,41 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 
-## for each race, create the tote results url;
-## tote.co.uk/results/totecoursename/time(hh:mm)/placepot
-def getpage(url):
+class PPNag():
+    name = ""
+    result = ""
+    placed = False
+    bib = ""
+    draw = ""
+    pp_units = 0
+    pp_percent = 0.0
+
+class PPRace():
+    leg = ""
+    pool = 0.0
+    remaining_units = 0
+    fav_pp = 0
+    fav_pp_perc = 0.0
+    pp_nags = []
+
+def getpage_for_leg(url, leg):
+    race = PPRace()
+    race.leg = leg
+    getpage_for_race(url, race)
+    return race
+
+def extract_runner(elm):
+    nag = PPNag()
+    nag.bib = elm.find_element_by_class_name("horse-number").text
+    nag.draw = elm.find_element_by_class_name("gate-number").text
+    nag.result = elm.find_element_by_class_name("finishing-position").text
+    nag.name = elm.find_element_by_class_name("horse-name").text
+    pp = elm.find_element_by_class_name("numerics")
+    nag.pp_units = pp.find_element_by_class_name("number").text
+    nag.pp_percent = pp.find_element_by_class_name("perCent").text
+    return nag
+
+def getpage_for_race(url, race):
 #    options = Options()
     #    options.headless = True
     driver = webdriver.Chrome(executable_path="./drivers/chromedriver.exe")
@@ -23,16 +55,12 @@ def getpage(url):
     result = WebDriverWait(driver, timeout=20, poll_frequency=1).\
         until(lambda d: d.find_element_by_xpath("//div[@data-testid='pool-result-page-multibet']"))
     poolsize = result.find_element_by_class_name("value")
-    print(poolsize.text)
-    legbuttons = result.find_elements_by_xpath("//li")
-    button = legbuttons[0]
-#    legdetails = WebDriverWait(driver, timeout=20, poll_frequency=1).\
-#        until(lambda d: d.find_element_by_xpath("//div[@data-testid='racecard-tab-1']"))
-    legdetails = result.find_element_by_xpath("//div[@data-testid='racecard-tab-1']")
+    race.pool = poolsize.text if poolsize is not None else ""
+    legdetails = result.find_element_by_xpath(f"//div[@data-testid='racecard-tab-{race.leg}']")
 
     remaining_units = legdetails.find_element_by_xpath("div/ul")
     remaining_unit_list = remaining_units.find_elements_by_xpath("li")
-    print(remaining_unit_list[1].text)
+    race.remaining_units = remaining_unit_list[race.leg].text if len(remaining_unit_list) >= race.leg else ""
 
     placed_runners_div = legdetails.find_element_by_xpath("div[3]/div[2]")
     placed_runners_table = placed_runners_div.find_elements(By.CSS_SELECTOR, "li")
@@ -40,16 +68,19 @@ def getpage(url):
     print("*** Placed runners ***")
 
     for elm in placed_runners_table:
-        print(elm.tag_name + " " + elm.text)
+        nag = extract_runner(elm)
+        nag.placed = True
+        race.pp_nags.append(nag)
 
     print("*** Other runners ***")
 
     other_runners_div = legdetails.find_element_by_xpath("div[3]/div[3]")
     other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
 
-    print("******")
     for elm in other_runners_table:
         print(elm.tag_name + " " + elm.text)
+
+    print("******")
 
     other_runners_div = legdetails.find_element_by_xpath("div[3]/div[4]")
     other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
@@ -60,4 +91,4 @@ def getpage(url):
 
 
 
-getpage("https://tote.co.uk/results/hexham/12:25/placepot")
+#   getpage("https://tote.co.uk/results/newton-abbot/13:45/placepot")
