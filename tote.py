@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
+import re
 
 class PPNag():
     name = ""
@@ -32,12 +33,18 @@ def extract_runner(elm):
     nag = PPNag()
     nag.bib = elm.find_element_by_class_name("horse-number").text
     nag.draw = elm.find_element_by_class_name("gate-number").text
-    nag.result = elm.find_element_by_class_name("finishing-position").text
+#    nag.result = elm.find_element_by_class_name("finishing-position").text
     nag.name = elm.find_element_by_class_name("horse-name").text
     pp = elm.find_element_by_class_name("numerics")
     nag.pp_units = pp.find_element_by_class_name("number").text
     nag.pp_percent = pp.find_element_by_class_name("perCent").text
     return nag
+
+def extract_fav(elm, race):
+    pp = elm.find_element_by_class_name("numerics")
+    race.fav_pp = pp.find_element_by_class_name("number").text
+    race.fav_pp_perc = pp.find_element_by_class_name("perCent").text
+
 
 def getpage_for_race(url, race):
 #    options = Options()
@@ -77,18 +84,17 @@ def getpage_for_race(url, race):
     other_runners_div = legdetails.find_element_by_xpath("div[3]/div[3]")
     other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
 
+    re_fav = re.compile("Unnamed Favourite")
+
     for elm in other_runners_table:
-        print(elm.tag_name + " " + elm.text)
+        if re.search(re_fav, elm.text):
+            extract_fav(elm, race)
+        else:
+            nag = extract_runner(elm)
+            nag.placed = False
+            race.pp_nags.append(nag)
 
     print("******")
-
-    other_runners_div = legdetails.find_element_by_xpath("div[3]/div[4]")
-    other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
-
-
-    for elm in other_runners_table:
-        print(elm.tag_name + " " + elm.text)
-
 
 
 #   getpage("https://tote.co.uk/results/newton-abbot/13:45/placepot")

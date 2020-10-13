@@ -1,8 +1,3 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from datetime import date
@@ -11,6 +6,7 @@ import os
 import requests
 import json
 import pickle
+import tote
 
 demo_odds = Fraction("5/2")
 
@@ -48,6 +44,7 @@ class Racecard:
         self.field = ""
         self.verdict = ""
         self.pp_fav = 0
+        self.pp_fav_perc = ""
         self.pp_nr = 0
         self.pp_pool = 0
         self.nags = []
@@ -77,6 +74,8 @@ class Nag:
         self.fav = ""
         self.race_comment = ""
         self.pp_pool = 0
+        self.pp_pool_perc = ""
+        self.placed = False
 
 def writepage(text, name):
     if not os.path.isdir("./pages"):
@@ -169,7 +168,7 @@ def extract_rp_runners(card):
     for raw_nag in raw_nags:
         nag = extract_rp_nag(raw_nag)
         card.nags.append(nag) if nag != None else None
-    
+#   extract betting forecast
 
 def extract_rp_racecard(raw_card, mtg, leg):
     card = Racecard()
@@ -187,6 +186,32 @@ def extract_rp_racecard(raw_card, mtg, leg):
     extract_rp_runners(card)
     return card
 
+def find_nag(card, tote_nag):
+    for nag in card.nags:
+        if nag.no == tote_nag.no:
+            return nag
+        if nag.draw == f"({tote_nag.draw})":
+            return nag
+    return None
+
+def get_toteresult(card):
+    # check that the race has already been run
+    result = tote.getpage_for_leg(card.totepp_url, card.leg)
+    # extract the details of result into card
+    card.pp_pool = result.pool
+    card.pp_fav = result.fav_pp
+    card.pp_fav_perc = result.fav_pp_perc
+    # run through the nags and find mapping nag, then extract results back into here
+    for pp_nag in result.pp_nags:
+        nag = find_nag(card, pp_nag)
+        if nag is None:
+            return None
+        # map the individual fields
+#        nag.result = pp_nag.result
+        nag.placed = pp_nag.placed
+        nag.pp_pool = pp_nag.pp_units
+        nag.pp_pool_perc = pp_nag.pp_percent
+    return card
 
 def extract_rp_meeting(raw_mtg):
     name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0].lower()
@@ -211,9 +236,11 @@ def extract_rp_meeting(raw_mtg):
     mtg.type = raw_mtg.find("span", {"class":"RC-accordion__meetingType"}).text.strip()
     mtg.going = raw_mtg.find("div", {"class":"RC-courseDescription__info"}).text.strip()
     raw_racecards = raw_mtg.findAll("div", {"class":"RC-meetingItem"})
+    leg = 0
     for raw_racecard in raw_racecards:
         leg += 1
         racecard = extract_rp_racecard(raw_racecard, mtg, leg)
+        get_toteresult(racecard) if leg <= 6 else None
         mtg.races.append(racecard)
     return mtg
 
