@@ -7,6 +7,7 @@ import requests
 import json
 import pickle
 import tote
+import copy
 
 demo_odds = Fraction("5/2")
 
@@ -32,6 +33,27 @@ class Meeting:
         self.pp_div = 0
         self.races = []
 
+    def serialise_mtg(self):
+        mtg = copy.copy(self)
+        mtg.races = {}
+        for card in self.races:
+            mtg.races[card.name] = card.serialise_card()
+        return mtg.__dict__
+
+    def writemtg(self):
+        if not os.path.isdir("./meetings"):
+            os.mkdir("./meetings")
+        today = date.today().strftime('%Y-%m-%d')
+        mtgkey = today + "-" + self.name
+        pathname = "meetings/" + mtgkey
+        with open(pathname + ".picle", "wb") as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+        ser = self.serialise_mtg()
+        dict = {mtgkey : ser}
+        with open(pathname + ".json", "w") as output:
+            json.dump(dict, output)
+
+
 class Racecard:
     def __init__(self):
         self.mtgname = ""
@@ -47,9 +69,20 @@ class Racecard:
         self.pp_fav_perc = ""
         self.pp_nr = 0
         self.pp_pool = 0
-        self.nags = []
+        self.nags = {}
         self.totepp_url = ""
         self.leg = 0
+
+    def serialise_card(self):
+        card = copy.copy(self)
+        card.nags = {}
+        for key, nag in self.nags.items():
+            card.nags[key] = nag.__dict__
+        return card.__dict__
+
+    def find_nag_by_name(self, nagname):
+        return self.nags.get(nagname.lower(), None)
+
 
 class Nag:
     def __init__(self):
@@ -86,28 +119,6 @@ def writepage(text, name):
     pathname = "pages/" + today + "/" + name + ".html"
     with open(pathname, "w") as output:
         output.write(text)
-
-def writemtg(mtg):
-    if not os.path.isdir("./meetings"):
-        os.mkdir("./meetings")
-    today = date.today().strftime('%Y-%m-%d')
-    mtgkey = today + "-" + mtg.name
-    pathname = "meetings/" + mtgkey
-    with open(pathname + ".picle", "wb") as f:
-        pickle.dump(mtg, f, pickle.HIGHEST_PROTOCOL)
-    ser = mtg.__dict__
-    cards = []
-    for card in mtg.races:
-        nags = []
-        for nag in card.nags:
-            nags.append(nag.__dict__)
-        carddict = card.__dict__
-        carddict["nags"] = nags
-        cards.append(carddict)
-    ser["races"] = cards
-    dict = {mtgkey : ser}
-    with open(pathname + ".json", "w") as output:
-        json.dump(dict, output)
 
 def getpage(url, name):
     r = requests.get(url)
@@ -167,7 +178,7 @@ def extract_rp_runners(card):
     raw_nags = runners_bs.findAll("div", {"class":"RC-runnerRow"})
     for raw_nag in raw_nags:
         nag = extract_rp_nag(raw_nag)
-        card.nags.append(nag) if nag != None else None
+        card.nags[nag.name.lower()] = nag if nag != None else None
     # Extract betting forecast
     forecast_groups = runners_bs.findAll("span", {"data-test-selector": "RC-bettingForecast_group"})
     for group in forecast_groups:
@@ -177,14 +188,8 @@ def extract_rp_forecast(group, card):
     odds = group.text.split()[0]
     nags = group.findAll("a")
     for nagname in nags:
-        nag = find_nag_by_name(card, nagname.text)
+        nag = card.find_nag_by_name(nagname.text)
         nag.rp_forecast = odds if nag is not None else None
-
-def find_nag_by_name(card, nagname):
-    for nag in card.nags:
-        if nag.name.lower() == nagname.lower():
-            return nag
-    return None
 
 def extract_rp_racecard(raw_card, mtg, leg):
     card = Racecard()
@@ -254,7 +259,7 @@ def extract_rp_meeting(raw_mtg):
     for raw_racecard in raw_racecards:
         leg += 1
         racecard = extract_rp_racecard(raw_racecard, mtg, leg)
-        get_toteresult(racecard) if leg <= 6 else None
+#        get_toteresult(racecard) if leg <= 6 else None
         mtg.races.append(racecard)
     return mtg
 
@@ -265,7 +270,7 @@ def read_racingpost_index():
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg)
         if mtg != None:
-            writemtg(mtg)
+            mtg.writemtg()
             meetings.append(mtg)
 # save meetings
 
