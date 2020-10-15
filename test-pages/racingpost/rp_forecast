@@ -1,0 +1,21 @@
+<div class="RC-raceFooterInfo                 RC-raceFooterInfo_bettingForecast                 RC-phone RC-raceFooterInfo_shown" data-test-selector="RC-bettingForecast_container">
+        <span class="RC-raceFooterInfo__label">Betting Forecast</span>
+                    <span data-test-selector="RC-bettingForecast_group">11/10                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2969900/panic-attack#race-id=766997">Panic Attack</a><!--
+                -->,                        </span>
+                    <span data-test-selector="RC-bettingForecast_group">5/4                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2664925/vegas-blue#race-id=766997">Vegas Blue</a><!--
+                -->,                        </span>
+                    <span data-test-selector="RC-bettingForecast_group">8/1                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2283946/keyboard-joan#race-id=766997">Keyboard Joan</a><!--
+                -->,                        </span>
+                    <span data-test-selector="RC-bettingForecast_group">16/1                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2935739/ginflix#race-id=766997">Ginflix</a><!--
+                -->,                            <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2861907/karastani#race-id=766997">Karastani</a><!--
+                -->,                        </span>
+                    <span data-test-selector="RC-bettingForecast_group">25/1                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2623770/just-a-sip#race-id=766997">Just A Sip</a><!--
+                -->,                        </span>
+                    <span data-test-selector="RC-bettingForecast_group">33/1                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/3016849/connie-wilde#race-id=766997">Connie Wilde</a><!--
+                -->,                            <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/1721397/dammit-janet#race-id=766997">Dammit Janet</a><!--
+                -->,                        </span>
+                    <span data-test-selector="RC-bettingForecast_group">100/1                                        <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/2604526/all-right#race-id=766997">All Right</a><!--
+                -->,                            <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/3041569/daraz-legacy#race-id=766997">Daraz Legacy</a><!--
+                -->,                            <a class="RC-raceFooterInfo__runner ui-link ui-link_table js-popupLink" data-test-selector="RC-bettingForecast_link" target="_blank" href="/profile/horse/3248539/libbys-ray#race-id=766997">Libby's Ray</a><!--
+                -->.                        </span>
+            </div>

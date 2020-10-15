@@ -168,7 +168,23 @@ def extract_rp_runners(card):
     for raw_nag in raw_nags:
         nag = extract_rp_nag(raw_nag)
         card.nags.append(nag) if nag != None else None
-#   extract betting forecast
+    # Extract betting forecast
+    forecast_groups = runners_bs.findAll("span", {"data-test-selector": "RC-bettingForecast_group"})
+    for group in forecast_groups:
+        extract_rp_forecast(group, card)
+
+def extract_rp_forecast(group, card):
+    odds = group.text.split()[0]
+    nags = group.findAll("a")
+    for nagname in nags:
+        nag = find_nag_by_name(card, nagname.text)
+        nag.rp_forecast = odds if nag is not None else None
+
+def find_nag_by_name(card, nagname):
+    for nag in card.nags:
+        if nag.name.lower() == nagname.lower():
+            return nag
+    return None
 
 def extract_rp_racecard(raw_card, mtg, leg):
     card = Racecard()
@@ -188,9 +204,9 @@ def extract_rp_racecard(raw_card, mtg, leg):
 
 def find_nag(card, tote_nag):
     for nag in card.nags:
-        if nag.no == tote_nag.no:
+        if nag.no == tote_nag.bib:
             return nag
-        if nag.draw == f"({tote_nag.draw})":
+        if nag.draw != "" and nag.draw == f"({tote_nag.draw})":
             return nag
     return None
 
@@ -204,13 +220,11 @@ def get_toteresult(card):
     # run through the nags and find mapping nag, then extract results back into here
     for pp_nag in result.pp_nags:
         nag = find_nag(card, pp_nag)
-        if nag is None:
-            return None
+        if nag is not None:
         # map the individual fields
-#        nag.result = pp_nag.result
-        nag.placed = pp_nag.placed
-        nag.pp_pool = pp_nag.pp_units
-        nag.pp_pool_perc = pp_nag.pp_percent
+            nag.placed = pp_nag.placed
+            nag.pp_pool = pp_nag.pp_units
+            nag.pp_pool_perc = pp_nag.pp_percent
     return card
 
 def extract_rp_meeting(raw_mtg):
