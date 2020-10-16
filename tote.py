@@ -1,9 +1,9 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+#from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.select import Select
+#from selenium.webdriver.support import expected_conditions as EC
+#from selenium.webdriver.support.select import Select
 import re
 
 class PPNag():
@@ -23,11 +23,93 @@ class PPRace():
     fav_pp_perc = 0.0
     pp_nags = []
 
-def getpage_for_leg(url, leg):
+
+def hammer_it(driver, url, repeat):
+    try:
+        driver.get(url)
+        result = WebDriverWait(driver, timeout=30, poll_frequency=5). \
+            until(lambda d: d.find_element_by_xpath("//div[@data-testid='pool-result-page-multibet']"))
+    except:
+        result = None
+    return result
+
+
+def getpage_for_races(dict):
+    pp_list = []
+    driver = webdriver.Chrome(executable_path="./drivers/chromedriver.exe")
+#    driver = webdriver.Remote(desired_capabilities={"browserName": "chrome"})
+    driver.get("https://tote.co.uk/results")
+    WebDriverWait(driver, timeout=20, poll_frequency=1).until(lambda d: d.find_element_by_xpath("//div[@data-testid='results']"))
+    for url, leg in dict.items():
+        repeat = 1
+        result = None
+        while result is None and repeat < 6:
+            result = hammer_it(driver, url, repeat)
+            repeat += 1
+        if result is not None:
+            race = extract_pprace(result, leg, driver)
+            pp_list.append(race)
+    return pp_list
+
+
+def extract_pprace(result, leg, driver):
     race = PPRace()
     race.leg = leg
-    getpage_for_race(url, race)
-    return race
+    poolsize = result.find_element_by_class_name("value")
+    race.pool = poolsize.text if poolsize is not None else ""
+    legdetails = WebDriverWait(driver, timeout=30, poll_frequency=5). \
+        until(lambda d: d.find_element_by_xpath(f"//div[@data-testid='racecard-tab-{leg}']"))
+    try:
+        remaining_units = legdetails.find_element_by_xpath("div/ul")
+        remaining_unit_list = remaining_units.find_elements_by_xpath("li")
+        race.remaining_units = remaining_unit_list[leg].text if len(remaining_unit_list) >= leg else ""
+    except:
+        # No leg by leg data
+        return None
+    extract_placed_runners(legdetails, race)
+    extract_other_runners(legdetails, race)
+
+
+def extract_placed_runners(legdetails, race):
+    placed_runners_div = legdetails.find_element_by_xpath("div[3]/div[2]")
+    placed_runners_table = placed_runners_div.find_elements(By.CSS_SELECTOR, "li")
+    for elm in placed_runners_table:
+        nag = extract_runner(elm)
+        nag.placed = True
+        race.pp_nags.append(nag)
+
+
+def extract_other_runners(legdetails, race):
+    re_fav = re.compile("Unnamed Favourite")
+    other_runners_div = legdetails.find_element_by_xpath("div[3]/div[3]")
+    other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
+    for elm in other_runners_table:
+        if re.search(re_fav, elm.text):
+            extract_fav(elm, race)
+        else:
+            nag = extract_runner(elm)
+            nag.placed = False
+            race.pp_nags.append(nag)
+    #if fav placed then extra table for other runners after unnamed fav and non-runners
+    try:
+        other_runners_div = legdetails.find_element_by_xpath("div[3]/div[4]")
+        other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
+        for elm in other_runners_table:
+            if re.search(re_fav, elm.text):
+                extract_fav(elm, race)
+            else:
+                nag = extract_runner(elm)
+                nag.placed = False
+                race.pp_nags.append(nag)
+    except:
+        None
+
+
+def extract_fav(elm, race):
+    pp = elm.find_element_by_class_name("numerics")
+    race.fav_pp = pp.find_element_by_class_name("number").text
+    race.fav_pp_perc = pp.find_element_by_class_name("perCent").text
+
 
 def extract_runner(elm):
     nag = PPNag()
@@ -41,71 +123,3 @@ def extract_runner(elm):
         pp_percent = pp.find_element_by_class_name("perCent")
         nag.pp_percent = pp_percent.text if pp_percent is not None else None
     return nag
-
-def extract_fav(elm, race):
-    pp = elm.find_element_by_class_name("numerics")
-    race.fav_pp = pp.find_element_by_class_name("number").text
-    race.fav_pp_perc = pp.find_element_by_class_name("perCent").text
-
-
-def getpage_for_race(url, race):
-#    options = Options()
-    #    options.headless = True
-    driver = webdriver.Chrome(executable_path="./drivers/chromedriver.exe")
-#    driver = webdriver.Remote(desired_capabilities={"browserName": "chrome"})
-    driver.get("https://tote.co.uk/results")
-    result = WebDriverWait(driver, timeout=20, poll_frequency=1).until(lambda d: d.find_element_by_xpath("//div[@data-testid='results']"))
-#    with webdriver.Chrome(executable_path="./drivers/chromedriver.exe", options=options) as driver:
-#        wait = WebDriverWait(driver, 10)
-#        driver.get("https://tote.co.uk/results")
-#        wait = WebDriverWait(driver, 10)
-    driver.get(url)
-    result = WebDriverWait(driver, timeout=30, poll_frequency=5).\
-        until(lambda d: d.find_element_by_xpath("//div[@data-testid='pool-result-page-multibet']"))
-    poolsize = result.find_element_by_class_name("value")
-    race.pool = poolsize.text if poolsize is not None else ""
-    legdetails = result.find_element_by_xpath(f"//div[@data-testid='racecard-tab-{race.leg}']")
-
-    try:
-        remaining_units = legdetails.find_element_by_xpath("div/ul")
-        remaining_unit_list = remaining_units.find_elements_by_xpath("li")
-        race.remaining_units = remaining_unit_list[race.leg].text if len(remaining_unit_list) >= race.leg else ""
-    except:
-        # No leg by leg data
-        return None
-
-    placed_runners_div = legdetails.find_element_by_xpath("div[3]/div[2]")
-    placed_runners_table = placed_runners_div.find_elements(By.CSS_SELECTOR, "li")
-
-    for elm in placed_runners_table:
-        nag = extract_runner(elm)
-        nag.placed = True
-        race.pp_nags.append(nag)
-
-    other_runners_div = legdetails.find_element_by_xpath("div[3]/div[3]")
-    other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
-
-    re_fav = re.compile("Unnamed Favourite")
-
-    for elm in other_runners_table:
-        if re.search(re_fav, elm.text):
-            extract_fav(elm, race)
-        else:
-            nag = extract_runner(elm)
-            nag.placed = False
-            race.pp_nags.append(nag)
-
-    try:
-        other_runners_div = legdetails.find_element_by_xpath("div[3]/div[4]")
-        other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
-
-        for elm in other_runners_table:
-            if re.search(re_fav, elm.text):
-                extract_fav(elm, race)
-            else:
-                nag = extract_runner(elm)
-                nag.placed = False
-                race.pp_nags.append(nag)
-    except:
-        None
-
