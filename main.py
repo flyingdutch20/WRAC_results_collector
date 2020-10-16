@@ -289,7 +289,9 @@ def read_racingpost_index():
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg)
         if mtg is not None:
+            print(f"collection pp for {mtg.name}")
             mtg.collect_ppresult()
+            print(f"Saving {mtg.name}")
             mtg.writemtg()
             meetings.append(mtg)
 
