@@ -8,6 +8,7 @@ import json
 import pickle
 import tote
 import copy
+import argparse
 
 demo_odds = Fraction("5/2")
 
@@ -250,8 +251,10 @@ def extract_rp_racecard(raw_card, mtg, leg):
     return card
 
 
-def extract_rp_meeting(raw_mtg):
+def extract_rp_meeting(raw_mtg, sel_mtg):
     name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0].lower()
+    if sel_mtg and name != sel_mtg:
+        return None
     #   racecount = 0
     racecount_bs = raw_mtg.find("span", {"class": "RC-accordion__raceCount"})
     if racecount_bs is None:
@@ -282,19 +285,45 @@ def extract_rp_meeting(raw_mtg):
     return mtg
 
 
-def read_racingpost_index():
+def read_racingpost_index(sel_mtg, collect_tote):
     bs = BeautifulSoup(getpage("https://www.racingpost.com/racecards/", "rpindex"), "html.parser")
     raw_meetings = bs.findAll("section", {"class": "ui-accordion__row"})
     meetings = []
     for raw_mtg in raw_meetings:
-        mtg = extract_rp_meeting(raw_mtg)
+        mtg = extract_rp_meeting(raw_mtg, sel_mtg)
         if mtg is not None:
-            print(f"collection pp for {mtg.name}")
-            mtg.collect_ppresult()
+            if collect_tote:
+                print(f"collection pp for {mtg.name}")
+                mtg.collect_ppresult()
             print(f"Saving {mtg.name}")
             mtg.writemtg()
             meetings.append(mtg)
 
 
+def get_args():
+    """Get command-line arguments"""
+
+    parser = argparse.ArgumentParser(
+        description='Racecard and Placepot information collector',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('-t',
+                        '--tote',
+                        help='Collect Tote pp data',
+                        action='store_true')
+
+    parser.add_argument('-m',
+                        '--meeting',
+                        metavar='str',
+                        type=str,
+                        default='',
+                        help='Meeting to collect')
+
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    read_racingpost_index()
+    args = get_args()
+    collect_tote = args.tote
+    meeting = args.meeting.lower()
+    read_racingpost_index(meeting, collect_tote)
