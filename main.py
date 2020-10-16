@@ -1,4 +1,4 @@
-#from urllib.request import urlopen
+#   from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from datetime import date
 from fractions import Fraction
@@ -13,13 +13,14 @@ demo_odds = Fraction("5/2")
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
-#global courselist_dict
+#   global courselist_dict
 for line in infile.read().split("\n"):
     words = line.split()
     if len(words) > 1:
         courselist_dict[words[0].strip().lower()] = words[1].strip().lower()
     else:
         courselist_dict[words[0].strip().lower()] = words[0].strip().lower()
+
 
 class Meeting:
     def __init__(self):
@@ -49,9 +50,9 @@ class Meeting:
         with open(pathname + ".picle", "wb") as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
         ser = self.serialise_mtg()
-        dict = {mtgkey : ser}
+        my_dict = {mtgkey: ser}
         with open(pathname + ".json", "w") as output:
-            json.dump(dict, output)
+            json.dump(my_dict, output)
 
     def collect_ppresult(self):
         urls = {}
@@ -91,8 +92,19 @@ class Racecard:
             card.nags[key] = nag.__dict__
         return card.__dict__
 
+    def find_nag(self, tote_nag):
+        return self.find_nag_by_name(tote_nag.name.lower()) if not None else self.find_nag_by_bib_or_draw(tote_nag)
+
     def find_nag_by_name(self, nagname):
         return self.nags.get(nagname.lower(), None)
+
+    def find_nag_by_bib_or_draw(self, tote_nag):
+        for nag in self.nags.values():
+            if nag.no == tote_nag.bib:
+                return nag
+            if nag.draw != "" and nag.draw == f"({tote_nag.draw})":
+                return nag
+        return None
 
     def set_toteresult(self, result):
         # extract the details of result into card
@@ -101,9 +113,9 @@ class Racecard:
         self.pp_fav_perc = result.fav_pp_perc
         # run through the nags and find mapping nag, then extract results back into here
         for pp_nag in result.pp_nags:
-            nag = find_nag(self, pp_nag)
+            nag = self.find_nag(pp_nag)
             if nag is not None:
-            # map the individual fields
+                #   map the individual fields
                 nag.placed = pp_nag.placed
                 nag.pp_pool = pp_nag.pp_units
                 nag.pp_pool_perc = pp_nag.pp_percent
@@ -135,6 +147,7 @@ class Nag:
         self.pp_pool_perc = ""
         self.placed = False
 
+
 def writepage(text, name):
     if not os.path.isdir("./pages"):
         os.mkdir("./pages")
@@ -145,20 +158,22 @@ def writepage(text, name):
     with open(pathname, "w") as output:
         output.write(text)
 
+
 def getpage(url, name):
     r = requests.get(url)
-    if r.raise_for_status() != None:
+    if r.raise_for_status() is not None:
         print(f"Error getting {url} - {name}")
         return ""
     html = r.text
     writepage(html, name)
     return html
 
+
 def find_or_empty(bs, key, search):
-    if bs == None:
+    if bs is None:
         return ""
-    s = bs.find(key, {"class":search})
-    return s.text.strip() if s != None else ""
+    s = bs.find(key, {"class": search})
+    return s.text.strip() if s is not None else ""
 
 
 def build_tote_url(race):
@@ -178,9 +193,9 @@ def extract_rp_nag(raw_nag):
     nag.lastrun = find_or_empty(raw_nag, "div", "RC-runnerStats__lastRun")
     nag.form = find_or_empty(raw_nag, "span", "RC-runnerInfo__form")
     nag.age = find_or_empty(raw_nag, "span", "RC-runnerAge")
-    jockey_outer = raw_nag.find("div", {"class":"RC-runnerInfo_jockey"})
+    jockey_outer = raw_nag.find("div", {"class": "RC-runnerInfo_jockey"})
     nag.jockey = find_or_empty(jockey_outer, "a", "RC-runnerInfo__name")
-    trainer_outer = raw_nag.find("div", {"class":"RC-runnerInfo_trainer"})
+    trainer_outer = raw_nag.find("div", {"class": "RC-runnerInfo_trainer"})
     nag.trainer = find_or_empty(trainer_outer, "a", "RC-runnerInfo__name")
     nag.ts = find_or_empty(raw_nag, "span", "RC-runnerTs")
     nag.rpr = find_or_empty(raw_nag, "span", "RC-runnerRpr")
@@ -196,18 +211,19 @@ def extract_rp_runners(card):
     # Verdict page
     verdictpage = getpage("https://www.racingpost.com/racecards/data/accordion/" + card.rp_id, fn_name + "_verdict")
     verdict_bs = BeautifulSoup(verdictpage, "html.parser")
-    card.verdict = verdict_bs.find("div", {"class":"RC-raceVerdict__content"}).text.strip()
+    card.verdict = verdict_bs.find("div", {"class": "RC-raceVerdict__content"}).text.strip()
     # Extract runners
     runnerspage = getpage("https://www.racingpost.com" + card.rp_url, fn_name)
     runners_bs = BeautifulSoup(runnerspage, "html.parser")
-    raw_nags = runners_bs.findAll("div", {"class":"RC-runnerRow"})
+    raw_nags = runners_bs.findAll("div", {"class": "RC-runnerRow"})
     for raw_nag in raw_nags:
         nag = extract_rp_nag(raw_nag)
-        card.nags[nag.name.lower()] = nag if nag != None else None
+        card.nags[nag.name.lower()] = nag if nag is not None else None
     # Extract betting forecast
     forecast_groups = runners_bs.findAll("span", {"data-test-selector": "RC-bettingForecast_group"})
     for group in forecast_groups:
         extract_rp_forecast(group, card)
+
 
 def extract_rp_forecast(group, card):
     odds = group.text.split()[0]
@@ -216,35 +232,29 @@ def extract_rp_forecast(group, card):
         nag = card.find_nag_by_name(nagname.text)
         nag.rp_forecast = odds if nag is not None else None
 
+
 def extract_rp_racecard(raw_card, mtg, leg):
     card = Racecard()
     card.mtgname = mtg.name
     card.leg = leg
-    card.name = raw_card.find("span", {"class":"RC-meetingItem__info"}).text.strip()
-    card.rp_id = raw_card.find("a", {"class":"RC-meetingItem__link"})["data-race-id"]
-    card.rp_url = raw_card.find("a", {"class":"RC-meetingItem__link"})["href"]
-    card.race_time = raw_card.find("span", {"class":"RC-meetingItem__timeLabel"}).text.strip()
-    words = raw_card.find("span", {"class":"RC-meetingItem__goingData"}).text.split()
-    card.race_class = " ".join(words[0:-1])
-    card.distance = words[-1]
-    card.field = raw_card.find("span", {"class":"RC-meetingItem__numberOfRunners"}).text.strip()
+    card.name = raw_card.find("span", {"class": "RC-meetingItem__info"}).text.strip()
+    card.rp_id = raw_card.find("a", {"class": "RC-meetingItem__link"})["data-race-id"]
+    card.rp_url = raw_card.find("a", {"class": "RC-meetingItem__link"})["href"]
+    card.race_time = raw_card.find("span", {"class": "RC-meetingItem__timeLabel"}).text.strip()
+    my_words = raw_card.find("span", {"class": "RC-meetingItem__goingData"}).text.split()
+    card.race_class = " ".join(my_words[0:-1])
+    card.distance = my_words[-1]
+    card.field = raw_card.find("span", {"class": "RC-meetingItem__numberOfRunners"}).text.strip()
     card.totepp_url = build_tote_url(card)
     extract_rp_runners(card)
     return card
 
-def find_nag(card, tote_nag):
-    for nag in card.nags.values():
-        if nag.no == tote_nag.bib:
-            return nag
-        if nag.draw != "" and nag.draw == f"({tote_nag.draw})":
-            return nag
-    return None
 
 def extract_rp_meeting(raw_mtg):
     name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0].lower()
-    racecount = 0
+    #   racecount = 0
     racecount_bs = raw_mtg.find("span", {"class": "RC-accordion__raceCount"})
-    if racecount_bs == None:
+    if racecount_bs is None:
         return None
     try:
         racecount_str = racecount_bs.text.split()[0]
@@ -259,10 +269,10 @@ def extract_rp_meeting(raw_mtg):
     mtg.name = name
     print(f"Collecting {name}")
     mtg.race_date = str(date.today())
-    mtg.start = raw_mtg.find("span", {"data-test-selector":"RC-accordion__firstRaceTime"}).text.strip()
-    mtg.type = raw_mtg.find("span", {"class":"RC-accordion__meetingType"}).text.strip()
-    mtg.going = raw_mtg.find("div", {"class":"RC-courseDescription__info"}).text.strip()
-    raw_racecards = raw_mtg.findAll("div", {"class":"RC-meetingItem"})
+    mtg.start = raw_mtg.find("span", {"data-test-selector": "RC-accordion__firstRaceTime"}).text.strip()
+    mtg.type = raw_mtg.find("span", {"class": "RC-accordion__meetingType"}).text.strip()
+    mtg.going = raw_mtg.find("div", {"class": "RC-courseDescription__info"}).text.strip()
+    raw_racecards = raw_mtg.findAll("div", {"class": "RC-meetingItem"})
     leg = 0
     for raw_racecard in raw_racecards:
         leg += 1
@@ -271,22 +281,18 @@ def extract_rp_meeting(raw_mtg):
         mtg.races.append(racecard)
     return mtg
 
+
 def read_racingpost_index():
     bs = BeautifulSoup(getpage("https://www.racingpost.com/racecards/", "rpindex"), "html.parser")
-    raw_meetings = bs.findAll("section", {"class":"ui-accordion__row"})
+    raw_meetings = bs.findAll("section", {"class": "ui-accordion__row"})
     meetings = []
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg)
-        if mtg != None:
+        if mtg is not None:
             mtg.collect_ppresult()
             mtg.writemtg()
             meetings.append(mtg)
-# save meetings
 
 
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     read_racingpost_index()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
