@@ -1,12 +1,13 @@
 from selenium import webdriver
-#from selenium.webdriver.chrome.options import Options
+#   from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-#from selenium.webdriver.support import expected_conditions as EC
-#from selenium.webdriver.support.select import Select
+#   from selenium.webdriver.support import expected_conditions as EC
+#   from selenium.webdriver.support.select import Select
 import re
 
-class PPNag():
+
+class PPNag:
     name = ""
     result = ""
     placed = False
@@ -15,7 +16,8 @@ class PPNag():
     pp_units = 0
     pp_percent = 0.0
 
-class PPRace():
+
+class PPRace:
     leg = ""
     pool = 0.0
     remaining_units = 0
@@ -24,7 +26,7 @@ class PPRace():
     pp_nags = []
 
 
-def hammer_it(driver, url, repeat):
+def hammer_it(driver, url):
     try:
         driver.get(url)
         result = WebDriverWait(driver, timeout=30, poll_frequency=5). \
@@ -34,17 +36,18 @@ def hammer_it(driver, url, repeat):
     return result
 
 
-def getpage_for_races(dict):
+def getpage_for_races(my_dict):
     pp_list = []
     driver = webdriver.Chrome(executable_path="./drivers/chromedriver.exe")
 #    driver = webdriver.Remote(desired_capabilities={"browserName": "chrome"})
     driver.get("https://tote.co.uk/results")
-    WebDriverWait(driver, timeout=20, poll_frequency=1).until(lambda d: d.find_element_by_xpath("//div[@data-testid='results']"))
-    for url, leg in dict.items():
+    WebDriverWait(driver, timeout=20, poll_frequency=1).\
+        until(lambda d: d.find_element_by_xpath("//div[@data-testid='results']"))
+    for url, leg in my_dict.items():
         repeat = 1
         result = None
         while result is None and repeat < 6:
-            result = hammer_it(driver, url, repeat)
+            result = hammer_it(driver, url)
             repeat += 1
         if result is not None:
             race = extract_pprace(result, leg, driver)
@@ -68,6 +71,7 @@ def extract_pprace(result, leg, driver):
         return None
     extract_placed_runners(legdetails, race)
     extract_other_runners(legdetails, race)
+    return race
 
 
 def extract_placed_runners(legdetails, race):
@@ -90,7 +94,7 @@ def extract_other_runners(legdetails, race):
             nag = extract_runner(elm)
             nag.placed = False
             race.pp_nags.append(nag)
-    #if fav placed then extra table for other runners after unnamed fav and non-runners
+    #   if fav placed then extra table for other runners after unnamed fav and non-runners
     try:
         other_runners_div = legdetails.find_element_by_xpath("div[3]/div[4]")
         other_runners_table = other_runners_div.find_elements(By.CSS_SELECTOR, "li")
@@ -101,8 +105,8 @@ def extract_other_runners(legdetails, race):
                 nag = extract_runner(elm)
                 nag.placed = False
                 race.pp_nags.append(nag)
-    except:
-        None
+    finally:
+        return None
 
 
 def extract_fav(elm, race):
