@@ -26,6 +26,13 @@ def get_args():
                         default='',
                         help='Meeting to collect')
 
+    parser.add_argument('-f',
+                        '--filename',
+                        metavar='str',
+                        type=str,
+                        default='',
+                        help='Upload picle meeting file to add results')
+
     return parser.parse_args()
 
 
@@ -34,4 +41,8 @@ if __name__ == '__main__':
     tote = args.tote
     results = args.results
     meeting = args.meeting.lower()
-    rp.read_racingpost_index(meeting, tote, results)
+    filename = args.filename
+    if args.filename:
+        rp.load_meeting_and_collect_results(filename, tote, results)
+    else:
+        rp.read_racingpost_index(meeting, tote, results)

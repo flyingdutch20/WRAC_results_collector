@@ -21,29 +21,31 @@ for line in infile.read().split("\n"):
         courselist_dict[words[0].strip().lower()] = words[0].strip().lower()
 
 
-def read_racingpost_index(sel_mtg, tote, results):
+def read_racingpost_index(sel_mtg, collect_pp, results):
     bs = BeautifulSoup(getpage("https://www.racingpost.com/racecards/", "rpindex"), "html.parser")
     raw_meetings = bs.findAll("section", {"class": "ui-accordion__row"})
-    meetings = []
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg, sel_mtg)
         if mtg is not None:
-            if tote:
-                print(f"Collecting Tote pp for {mtg.name}")
-                mtg.collect_ppresult()
-            if results:
-                print(f"Collecting RP results for {mtg.name}")
-                mtg.collect_rpresult()
+            mtg.collect_results(collect_pp, results)
             print(f"Saving {mtg.name}")
             mtg.writemtg()
-            meetings.append(mtg)
+
+
+def load_meeting_and_collect_results(filename, collect_pp, results):
+    with open(filename, "rb") as mtgfile:
+        mtg = pickle.load(mtgfile)
+        if mtg is not None:
+            mtg.collect_results(collect_pp, results)
+            print(f"Saving {mtg.name}")
+            mtg.writemtg()
 
 
 def getpage(url, name):
     try:
         r = requests.get(url)
         if r.status_code > 299:
-            print(f"Error getting {url} - {name}")
+            print(f"No results available for {name}")
             return ""
         html = r.text
         writepage(html, name)
@@ -96,12 +98,21 @@ class Meeting:
         today = date.today().strftime('%Y-%m-%d')
         mtgkey = today + "-" + self.name
         pathname = "meetings/" + mtgkey
-        with open(pathname + ".picle", "wb") as f:
+        with open(pathname + ".pickle", "wb") as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
         ser = self.serialise_mtg()
         my_dict = {mtgkey: ser}
         with open(pathname + ".json", "w") as output:
             json.dump(my_dict, output)
+
+    def collect_results(self, collect_pp, results):
+        if collect_pp:
+            print(f"Collecting Tote pp for {self.name}")
+            self.collect_ppresult()
+        if results:
+            print(f"Collecting RP results for {self.name}")
+            self.collect_rpresult()
+
 
     def collect_ppresult(self):
         urls = {}
@@ -146,7 +157,8 @@ class Racecard:
         return card.__dict__
 
     def find_nag(self, tote_nag):
-        return self.find_nag_by_name(tote_nag.name.lower()) if not None else self.find_nag_by_bib_or_draw(tote_nag)
+        return self.find_nag_by_name(tote_nag.name.lower()) if not None \
+            else self.find_nag_by_bib_or_draw(tote_nag)
 
     def find_nag_by_name(self, nagname):
         return self.nags.get(nagname.lower(), None)
@@ -223,17 +235,19 @@ class Racecard:
 
     def collect_rpresult(self):
         # collect the results from the racingpost page
-        fn_name = f"{self.mtgname} - {self.race_time}"
+        fn_time = "_".join(self.race_time.split(":"))
+        fn_name = f"{self.mtgname}_{fn_time}"
         print(f"Collecting results for {fn_name}")
         resultsurl = "https://www.racingpost.com" + self.rp_url.replace("racecards", "results")
-        resultspage = getpage(resultsurl, fn_name)
+        resultspage = getpage(resultsurl, fn_name + "_result")
         runners_bs = BeautifulSoup(resultspage, "html.parser")
-        raw_nags = runners_bs.findAll("tr", {"class": "rp-horse_Table__mainRow"})
+#        raw_nags = runners_bs.findAll("tr", {"class": "rp-horse_Table__mainRow"})
+        raw_nags = runners_bs.findAll("tr")
         for raw_nag in raw_nags:
             nagname = find_or_empty(raw_nag, "a", "rp-horseTable__horse__name")
             nagresult = find_or_empty(raw_nag, "span", "rp-horseTable__pos__number")
             nag_sp = find_or_empty(raw_nag, "span", "rp-horseTable__horse__price")
-            nag = self.nags.get(nagname)
+            nag = self.nags.get(nagname.lower())
             if nag:
                 nag.sp = nag_sp
                 nag.result = nagresult
