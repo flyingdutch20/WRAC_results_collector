@@ -12,21 +12,6 @@ import copy
 demo_odds = Fraction("5/2")
 
 
-class RenameUnpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        renamed_module = module
-        if module == "main":
-            renamed_module = "rp"
-
-        return super(RenameUnpickler, self).find_class(renamed_module, name)
-
-
-def renamed_load(file_obj):
-    unp = RenameUnpickler(file_obj)
-    unp_load = unp.load()
-    return unp_load
-
-
 infile = open('courselist_tote.txt')
 courselist_dict = {}
 #   global courselist_dict
@@ -55,11 +40,13 @@ def load_meeting_and_collect_results(filename, collect_pp, results):
         try:
             mtg = pickle.load(mtgfile)
         except Exception:
-            mtg = renamed_load(mtgfile)
+            print(f"Can't unpickle {filename}")
         if mtg is not None:
-            mtg.collect_results(collect_pp, results)
-            print(f"Saving {mtg.name}")
-            mtg.writemtg()
+            print("We have a meeting")
+            rp_mtg = create_rp_mtg(mtg)
+            rp_mtg.collect_results(collect_pp, results)
+            print(f"Saving {rp_mtg.name}")
+            rp_mtg.writemtg()
 
 
 def getpage(url, name):
@@ -351,3 +338,73 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
         mtg.races.append(card)
     return mtg
 
+def create_rp_mtg(mtg):
+    rp_mtg = Meeting()
+    rp_mtg.name = mtg.name
+    rp_mtg.race_date = mtg.race_date
+    rp_mtg.start = mtg.start 
+    rp_mtg.type = mtg.type 
+    rp_mtg.going = mtg.going 
+    rp_mtg.stalls = mtg.stalls 
+    rp_mtg.pp_pool = mtg.pp_pool
+    rp_mtg.pp_div = mtg.pp_div
+    rp_mtg.races = []
+    for race in mtg.races:
+        rp_race = create_rp_race(race)
+        rp_mtg.races.append(rp_race)
+    return rp_mtg
+
+def create_rp_race(race):
+    rp_race = Racecard()
+    rp_race.mtgname = race.mtgname
+    rp_race.name = race.name
+    rp_race.rp_id = race.rp_id
+    rp_race.rp_url = race.rp_url
+    rp_race.race_time = race.race_time
+    rp_race.race_class = race.race_class
+    rp_race.distance = race.distance
+    rp_race.field = race.field
+    rp_race.verdict = race.verdict
+    rp_race.pp_fav = race.pp_fav
+    rp_race.pp_fav_perc = race.pp_fav_perc
+    rp_race.pp_nr = race.pp_nr
+    rp_race.pp_pool = race.pp_pool
+    rp_race.nags = {}
+    rp_race.totepp_url = race.totepp_url
+    rp_race.leg = race.leg
+    if isinstance(race.nags, list):
+        for nag in race.nags:
+            rp_nag = create_rp_nag(nag)
+            rp_race.nags[nag.name] = rp_nag
+    else:
+        for key, nag in race.nags.items():
+            rp_nag = create_rp_nag(nag)
+            rp_race.nags[key] = rp_nag
+    return rp_race
+
+def create_rp_nag(nag):
+    rp_nag = Nag()
+    rp_nag.name = nag.name
+    rp_nag.rp_id = nag.rp_id
+    rp_nag.no = nag.no
+    rp_nag.draw = nag.draw
+    rp_nag.lastrun = nag.lastrun
+    rp_nag.form = nag.form
+    rp_nag.age = nag.age
+    rp_nag.jockey = nag.jockey
+    rp_nag.trainer = nag.trainer
+    rp_nag.ts = nag.ts
+    rp_nag.rpr = nag.rpr
+    rp_nag.rp_comment = nag.rp_comment
+    rp_nag.rp_forecast = nag.rp_forecast
+    rp_nag.bet365_odds = []
+    rp_nag.best_odds = []
+    rp_nag.bf_odds = []
+    rp_nag.result = nag.result
+    rp_nag.sp = nag.sp
+    rp_nag.fav = nag.fav
+    rp_nag.race_comment = nag.race_comment
+    rp_nag.pp_pool = nag.pp_pool
+    rp_nag.pp_pool_perc = nag.pp_pool_perc
+    rp_nag.placed = nag.placed
+    return rp_nag
