@@ -3,12 +3,29 @@ from datetime import date
 from fractions import Fraction
 import os
 import requests
+import io
 import json
 import pickle
 import tote
 import copy
 
 demo_odds = Fraction("5/2")
+
+
+class RenameUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        renamed_module = module
+        if module == "main":
+            renamed_module = "rp"
+
+        return super(RenameUnpickler, self).find_class(renamed_module, name)
+
+
+def renamed_load(file_obj):
+    unp = RenameUnpickler(file_obj)
+    unp_load = unp.load()
+    return unp_load
+
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
@@ -34,7 +51,11 @@ def read_racingpost_index(sel_mtg, collect_pp, results):
 
 def load_meeting_and_collect_results(filename, collect_pp, results):
     with open(filename, "rb") as mtgfile:
-        mtg = pickle.load(mtgfile)
+        mtg = None
+        try:
+            mtg = pickle.load(mtgfile)
+        except Exception:
+            mtg = renamed_load(mtgfile)
         if mtg is not None:
             mtg.collect_results(collect_pp, results)
             print(f"Saving {mtg.name}")
@@ -42,17 +63,17 @@ def load_meeting_and_collect_results(filename, collect_pp, results):
 
 
 def getpage(url, name):
-    try:
+#    try:
         r = requests.get(url)
         if r.status_code > 299:
             print(f"No results available for {name}")
             return ""
         html = r.text
-        writepage(html, name)
+#        writepage(html, name)
         return html
-    except:
-        print(f"Error getting {url} - {name}")
-        return ""
+#    except:
+#        print(f"Error getting {url} - {name}")
+#        return ""
 
 
 def writepage(text, name):
@@ -131,8 +152,8 @@ class Meeting:
             race.collect_rpresult()
 
 class Racecard:
-    def __init__(self, mtg, leg):
-        self.mtgname = mtg.name
+    def __init__(self):
+        self.mtgname = ""
         self.name = ""
         self.rp_id = ""
         self.rp_url = ""
@@ -147,7 +168,7 @@ class Racecard:
         self.pp_pool = 0
         self.nags = {}
         self.totepp_url = ""
-        self.leg = leg
+        self.leg = 0
 
     def serialise_card(self):
         card = copy.copy(self)
@@ -323,7 +344,9 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
     leg = 0
     for raw_racecard in raw_racecards:
         leg += 1
-        card = Racecard(mtg, leg)
+        card = Racecard()
+        card.mtgname = name
+        card.leg = leg
         card.extract_rp_racecard(raw_racecard)
         mtg.races.append(card)
     return mtg

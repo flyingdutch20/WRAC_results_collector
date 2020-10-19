@@ -5,6 +5,6 @@ PyInstaller.__main__.run([
     '--onefile',
 #    '--add-binary=%s' % './drivers/chromedriver.exe',
 #    '--manifest=%s' % 'wrac_classes.exe.manifest',
-    '--icon=%s' % os.path.join('.', 'resources', 'equestrian.png'),
+    '--icon=%s' % os.path.join('.', 'resources', 'equestrian.ico'),
     'main.py'
 ])
