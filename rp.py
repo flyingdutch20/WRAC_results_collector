@@ -3,7 +3,6 @@ from datetime import date
 from fractions import Fraction
 import os
 import requests
-import io
 import json
 import pickle
 import tote
@@ -14,7 +13,6 @@ demo_odds = Fraction("5/2")
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
-#   global courselist_dict
 for line in infile.read().split("\n"):
     words = line.split()
     if len(words) > 1:
@@ -41,37 +39,20 @@ def load_meeting_and_collect_results(filename, collect_pp, results):
             mtg = pickle.load(mtgfile)
         except Exception:
             print(f"Can't unpickle {filename}")
-        if mtg is not None:
+        if isinstance(mtg, Meeting):
             print("We have a meeting")
-            rp_mtg = create_rp_mtg(mtg)
-            rp_mtg.collect_results(collect_pp, results)
-            print(f"Saving {rp_mtg.name}")
-            rp_mtg.writemtg()
+            mtg.collect_results(collect_pp, results)
+            print(f"Saving {mtg.name}")
+            mtg.writemtg()
 
 
 def getpage(url, name):
-#    try:
-        r = requests.get(url)
-        if r.status_code > 299:
-            print(f"No results available for {name}")
-            return ""
-        html = r.text
-#        writepage(html, name)
-        return html
-#    except:
-#        print(f"Error getting {url} - {name}")
-#        return ""
-
-
-def writepage(text, name):
-    if not os.path.isdir("./pages"):
-        os.mkdir("./pages")
-    today = date.today().strftime('%Y-%m-%d')
-    if not os.path.isdir("./pages/"+today):
-        os.mkdir("./pages/"+today)
-    pathname = "pages/" + today + "/" + name + ".html"
-    with open(pathname, "w") as output:
-        output.write(text)
+    r = requests.get(url)
+    if r.status_code > 299:
+        print(f"No results available for {name}")
+        return ""
+    html = r.text
+    return html
 
 
 def find_or_empty(bs, key, search):
@@ -103,8 +84,7 @@ class Meeting:
     def writemtg(self):
         if not os.path.isdir("./meetings"):
             os.mkdir("./meetings")
-        today = date.today().strftime('%Y-%m-%d')
-        mtgkey = today + "-" + self.name
+        mtgkey = self.race_date + "-" + self.name
         pathname = "meetings/" + mtgkey
         with open(pathname + ".pickle", "wb") as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
@@ -121,7 +101,6 @@ class Meeting:
             print(f"Collecting RP results for {self.name}")
             self.collect_rpresult()
 
-
     def collect_ppresult(self):
         urls = {}
         for race in self.races:
@@ -137,6 +116,7 @@ class Meeting:
         # collect the results from rp if they are there
         for race in self.races:
             race.collect_rpresult()
+
 
 class Racecard:
     def __init__(self):
@@ -193,7 +173,6 @@ class Racecard:
 
     def extract_rp_runners(self):
         fn_time = "_".join(self.race_time.split(":"))
-        fn_mtg = self.mtgname
         print(f"Collecting {self.mtgname} - {self.race_time}", )
         fn_name = self.mtgname + "_" + fn_time
         # Verdict page
@@ -260,6 +239,7 @@ class Racecard:
                 nag.sp = nag_sp
                 nag.result = nagresult
 
+
 class Nag:
     def __init__(self):
         self.name = ""
@@ -307,7 +287,6 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
     name = raw_mtg.find("span", {"class": "RC-accordion__courseName"}).text.split()[0].lower()
     if sel_mtg and name != sel_mtg:
         return None
-    #   racecount = 0
     racecount_bs = raw_mtg.find("span", {"class": "RC-accordion__raceCount"})
     if racecount_bs is None:
         return None
@@ -323,7 +302,7 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
     mtg = Meeting()
     mtg.name = name
     print(f"Collecting {name}")
-    mtg.race_date = str(date.today())
+    mtg.race_date = date.today().strftime('%Y-%m-%d')
     mtg.start = raw_mtg.find("span", {"data-test-selector": "RC-accordion__firstRaceTime"}).text.strip()
     mtg.type = raw_mtg.find("span", {"class": "RC-accordion__meetingType"}).text.strip()
     mtg.going = raw_mtg.find("div", {"class": "RC-courseDescription__info"}).text.strip()
@@ -337,74 +316,3 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
         card.extract_rp_racecard(raw_racecard)
         mtg.races.append(card)
     return mtg
-
-def create_rp_mtg(mtg):
-    rp_mtg = Meeting()
-    rp_mtg.name = mtg.name
-    rp_mtg.race_date = mtg.race_date
-    rp_mtg.start = mtg.start 
-    rp_mtg.type = mtg.type 
-    rp_mtg.going = mtg.going 
-    rp_mtg.stalls = mtg.stalls 
-    rp_mtg.pp_pool = mtg.pp_pool
-    rp_mtg.pp_div = mtg.pp_div
-    rp_mtg.races = []
-    for race in mtg.races:
-        rp_race = create_rp_race(race)
-        rp_mtg.races.append(rp_race)
-    return rp_mtg
-
-def create_rp_race(race):
-    rp_race = Racecard()
-    rp_race.mtgname = race.mtgname
-    rp_race.name = race.name
-    rp_race.rp_id = race.rp_id
-    rp_race.rp_url = race.rp_url
-    rp_race.race_time = race.race_time
-    rp_race.race_class = race.race_class
-    rp_race.distance = race.distance
-    rp_race.field = race.field
-    rp_race.verdict = race.verdict
-    rp_race.pp_fav = race.pp_fav
-    rp_race.pp_fav_perc = race.pp_fav_perc
-    rp_race.pp_nr = race.pp_nr
-    rp_race.pp_pool = race.pp_pool
-    rp_race.nags = {}
-    rp_race.totepp_url = race.totepp_url
-    rp_race.leg = race.leg
-    if isinstance(race.nags, list):
-        for nag in race.nags:
-            rp_nag = create_rp_nag(nag)
-            rp_race.nags[nag.name] = rp_nag
-    else:
-        for key, nag in race.nags.items():
-            rp_nag = create_rp_nag(nag)
-            rp_race.nags[key] = rp_nag
-    return rp_race
-
-def create_rp_nag(nag):
-    rp_nag = Nag()
-    rp_nag.name = nag.name
-    rp_nag.rp_id = nag.rp_id
-    rp_nag.no = nag.no
-    rp_nag.draw = nag.draw
-    rp_nag.lastrun = nag.lastrun
-    rp_nag.form = nag.form
-    rp_nag.age = nag.age
-    rp_nag.jockey = nag.jockey
-    rp_nag.trainer = nag.trainer
-    rp_nag.ts = nag.ts
-    rp_nag.rpr = nag.rpr
-    rp_nag.rp_comment = nag.rp_comment
-    rp_nag.rp_forecast = nag.rp_forecast
-    rp_nag.bet365_odds = []
-    rp_nag.best_odds = []
-    rp_nag.bf_odds = []
-    rp_nag.result = nag.result
-    rp_nag.sp = nag.sp
-    rp_nag.fav = nag.fav
-    rp_nag.race_comment = nag.race_comment
-    rp_nag.pp_pool = nag.pp_pool
-    rp_nag.pp_pool_perc = nag.pp_pool_perc
-    rp_nag.placed = nag.placed
-    return rp_nag
