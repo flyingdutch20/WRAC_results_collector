@@ -201,8 +201,9 @@ class Racecard:
 
     def set_tote_url(self):
         racetime = self.race_time.split(":")
-        if int(racetime[0]) < 12:
-            racetime[0] = str(int(racetime[0]) + 12)
+        hours = int(racetime[0])
+        if  hours < 10:
+            racetime[0] = str(hours + 12)
         tote_coursename = courselist_dict[self.mtgname]
         self.totepp_url = f"https://tote.co.uk/results/{tote_coursename}/{racetime[0]}:{racetime[1]}/placepot"
 
