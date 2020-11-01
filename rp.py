@@ -1,15 +1,12 @@
 from bs4 import BeautifulSoup
 from datetime import date
-from fractions import Fraction
 import os
 import requests
 import json
 import pickle
 import tote
 import copy
-
-demo_odds = Fraction("5/2")
-
+import odds
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
@@ -191,6 +188,7 @@ class Racecard:
         forecast_groups = runners_bs.findAll("span", {"data-test-selector": "RC-bettingForecast_group"})
         for group in forecast_groups:
             self.extract_rp_forecast(group)
+        self.set_rp_forecast_chance()
 
     def extract_rp_forecast(self, group):
         odds = group.text.split()[0]
@@ -239,6 +237,19 @@ class Racecard:
             if nag:
                 nag.sp = nag_sp
                 nag.result = nagresult
+        self.set_sp_chance()
+
+    def set_rp_forecast_chance(self):
+        rp_forecast_odds = [nag.rp_forecast for nag in self.nags.values()]
+        chance_dict = odds.get_place_chances_for(rp_forecast_odds)
+        for nag in self.nags.values():
+            nag.rp_forecast_chance = chance_dict[nag.rp_forecast]
+
+    def set_sp_chance(self):
+        sp_odds = [nag.sp for nag in self.nags.values()]
+        chance_dict = odds.get_place_chances_for(sp_odds)
+        for nag in self.nags.values():
+            nag.sp_chance = chance_dict[nag.sp]
 
 
 class Nag:
@@ -266,6 +277,8 @@ class Nag:
         self.pp_pool = 0
         self.pp_pool_perc = ""
         self.placed = False
+        self.rp_forecast_chance = 0
+        self.sp_chance = 0
 
     def extract_rp_nag(self, raw_nag):
         self.rp_id = raw_nag["data-ugc-runnerid"]
