@@ -91,7 +91,7 @@ class race:
                 mydict[odds] += self.calculate_4th(odds)
         for nag in self.nags:
             nag.chance = mydict[nag.normalised]
-            self.place_chance_dict[nag.odds] = nag.chance
+            self.place_chance_dict[nag.odds] = [nag.normalised, nag.chance]
 
     def calculate_2nd(self, odds):
         odds_list_first = self.normalised_odds.copy()

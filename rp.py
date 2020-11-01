@@ -243,13 +243,15 @@ class Racecard:
         rp_forecast_odds = [nag.rp_forecast for nag in self.nags.values()]
         chance_dict = odds.get_place_chances_for(rp_forecast_odds)
         for nag in self.nags.values():
-            nag.rp_forecast_chance = chance_dict[nag.rp_forecast]
+            nag.rp_forecast_win_chance = chance_dict[nag.rp_forecast][0]
+            nag.rp_forecast_place_chance = chance_dict[nag.rp_forecast][1]
 
     def set_sp_chance(self):
         sp_odds = [nag.sp for nag in self.nags.values()]
         chance_dict = odds.get_place_chances_for(sp_odds)
         for nag in self.nags.values():
-            nag.sp_chance = chance_dict[nag.sp]
+            nag.sp_win_chance = chance_dict[nag.sp][0]
+            nag.sp_place_chance = chance_dict[nag.sp][1]
 
 
 class Nag:
@@ -277,8 +279,10 @@ class Nag:
         self.pp_pool = 0
         self.pp_pool_perc = ""
         self.placed = False
-        self.rp_forecast_chance = 0
-        self.sp_chance = 0
+        self.rp_forecast_win_chance = 0
+        self.rp_forecast_place_chance = 0
+        self.sp_win_chance = 0
+        self.sp_place_chance = 0
 
     def extract_rp_nag(self, raw_nag):
         self.rp_id = raw_nag["data-ugc-runnerid"]
