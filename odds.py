@@ -1,3 +1,4 @@
+import re
 from fractions import Fraction
 
 """
@@ -30,7 +31,8 @@ class nag:
         self.set_inverse()
 
     def set_fraction(self, odds):
-        if odds == "Fav":
+        odds = re.sub(r'[JF]$', '', odds)
+        if odds == "Evs":
             self.fraction = Fraction(1)
         try:
             self.fraction = Fraction(odds)
@@ -38,7 +40,12 @@ class nag:
             self.fraction = 0
 
     def set_inverse(self):
-        self.float_odds = float(1/(1+self.fraction))
+        if self.fraction > 0:
+            self.float_odds = float(1/(1+self.fraction))
+        else:
+            self.float_odds = 0
+
+#        self.float_odds = float(1/(1+self.fraction)) if self.fraction > 0 else 0
 
 class race:
     places = 0
@@ -50,8 +57,9 @@ class race:
         self.normalised_odds = []
         self.place_chance_dict = {}
         for odds in odds_list:
-            my_nag = nag(odds)
-            self.nags.append(my_nag)
+            if odds:
+                my_nag = nag(odds)
+                self.nags.append(my_nag)
         self.set_places()
         self.normalise_odds()
         self.calculate_place_chance()

@@ -243,15 +243,17 @@ class Racecard:
         rp_forecast_odds = [nag.rp_forecast for nag in self.nags.values()]
         chance_dict = odds.get_place_chances_for(rp_forecast_odds)
         for nag in self.nags.values():
-            nag.rp_forecast_win_chance = chance_dict[nag.rp_forecast][0]
-            nag.rp_forecast_place_chance = chance_dict[nag.rp_forecast][1]
+            chance = chance_dict.get(nag.rp_forecast, [0, 0])
+            nag.rp_forecast_win_chance = chance[0]
+            nag.rp_forecast_place_chance = chance[1]
 
     def set_sp_chance(self):
         sp_odds = [nag.sp for nag in self.nags.values()]
         chance_dict = odds.get_place_chances_for(sp_odds)
         for nag in self.nags.values():
-            nag.sp_win_chance = chance_dict[nag.sp][0]
-            nag.sp_place_chance = chance_dict[nag.sp][1]
+            chance = chance_dict.get(nag.sp, [0, 0])
+            nag.sp_win_chance = chance[0]
+            nag.sp_place_chance = chance[1]
 
 
 class Nag:
@@ -268,12 +270,12 @@ class Nag:
         self.ts = ""
         self.rpr = ""
         self.rp_comment = ""
-        self.rp_forecast = 0
+        self.rp_forecast = ""
         self.bet365_odds = []
         self.best_odds = []
         self.bf_odds = []
         self.result = ""
-        self.sp = 0
+        self.sp = ""
         self.fav = ""
         self.race_comment = ""
         self.pp_pool = 0
