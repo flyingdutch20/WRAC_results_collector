@@ -218,6 +218,7 @@ class Racecard:
             if nag is not None:
                 #   map the individual fields
                 nag.placed = pp_nag.placed
+                nag.pp_placed = pp_nag.placed
                 nag.pp_pool = pp_nag.pp_units
                 nag.pp_pool_perc = pp_nag.pp_percent
 
@@ -256,6 +257,7 @@ class Racecard:
             chance = chance_dict.get(nag.sp, [0, 0])
             nag.sp_win_chance = chance[0]
             nag.sp_place_chance = chance[1]
+            nag.set_placed(len(self.nags))
 
 
 class Nag:
@@ -282,6 +284,7 @@ class Nag:
         self.race_comment = ""
         self.pp_pool = 0
         self.pp_pool_perc = ""
+        self.pp_placed = False
         self.placed = False
         self.rp_forecast_win_chance = 0
         self.rp_forecast_place_chance = 0
@@ -303,6 +306,21 @@ class Nag:
         self.ts = find_or_empty(raw_nag, "span", "RC-runnerTs")
         self.rpr = find_or_empty(raw_nag, "span", "RC-runnerRpr")
         self.rp_comment = find_or_empty(raw_nag, "div", "RC-comments__content")
+
+    def set_placed(self, runners):
+        try:
+            place = int(self.result.strip()[0])
+        except:
+            place = 99
+        if runners < 5:
+            places = 1
+        elif runners < 8:
+            places = 2
+        elif runners < 16:
+            places = 3
+        else:
+            places = 4
+        self.placed = (place <= places)
 
 
 def extract_rp_meeting(raw_mtg, sel_mtg):

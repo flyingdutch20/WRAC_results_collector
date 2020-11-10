@@ -31,7 +31,7 @@ def get_args():
                         metavar='str',
                         type=str,
                         default='',
-                        help='Upload picle meeting file to add results')
+                        help='Upload pickle meeting file to add results')
 
     return parser.parse_args()
 

@@ -117,7 +117,7 @@ class race:
             odds_list_second = odds_list_first.copy()
             odds_list_second.remove(first)
             for second in odds_list_second:
-                chance += first * second * odds / (1 - first - second)
+                chance += first * second / (1 - first) * odds / (1 - first - second)
         return chance
 
     def calculate_4th(self, odds):
@@ -131,7 +131,7 @@ class race:
                 odds_list_third = odds_list_second.copy()
                 odds_list_third.remove(second)
                 for third in odds_list_third:
-                    chance += first * second * third * odds / (1 - first - second - third)
+                    chance += first * second / (1 - first) * third / (1 - first - second) * odds / (1 - first - second - third)
         return chance
 
 
