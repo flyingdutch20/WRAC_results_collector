@@ -80,7 +80,7 @@ class race:
         sum_odds = sum([nag.float_odds for nag in self.nags])
         for nag in self.nags:
             normalised = nag.float_odds / sum_odds
-            nag.normalised = normalised
+            nag.normalised = normalised # = win chance
             self.normalised_odds.append(normalised)
 
     def calculate_place_chance(self):
@@ -106,7 +106,7 @@ class race:
         odds_list_first.remove(odds)
         chance = 0
         for first in odds_list_first:
-            chance += first * odds
+            chance += first * odds / (1 - first)
         return chance
 
     def calculate_3rd(self, odds):
@@ -117,7 +117,7 @@ class race:
             odds_list_second = odds_list_first.copy()
             odds_list_second.remove(first)
             for second in odds_list_second:
-                chance += first * second * odds
+                chance += first * second * odds / (1 - first - second)
         return chance
 
     def calculate_4th(self, odds):
@@ -131,7 +131,7 @@ class race:
                 odds_list_third = odds_list_second.copy()
                 odds_list_third.remove(second)
                 for third in odds_list_third:
-                    chance += first * second * third * odds
+                    chance += first * second * third * odds / (1 - first - second - third)
         return chance
 
 

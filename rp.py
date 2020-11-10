@@ -157,14 +157,16 @@ class Racecard:
         return None
 
     def extract_rp_racecard(self, raw_card):
-        self.name = raw_card.find("span", {"class": "RC-meetingItem__info"}).text.strip()
-        self.rp_id = raw_card.find("a", {"class": "RC-meetingItem__link"})["data-race-id"]
-        self.rp_url = raw_card.find("a", {"class": "RC-meetingItem__link"})["href"]
-        self.race_time = raw_card.find("span", {"class": "RC-meetingItem__timeLabel"}).text.strip()
-        my_words = raw_card.find("span", {"class": "RC-meetingItem__goingData"}).text.split()
-        self.race_class = " ".join(my_words[0:-1])
-        self.distance = my_words[-1]
-        self.field = raw_card.find("span", {"class": "RC-meetingItem__numberOfRunners"}).text.strip()
+        try:
+            self.name = raw_card.find("span", {"class": "RC-meetingItem__info"}).text.strip()
+            self.rp_id = raw_card.find("a", {"class": "RC-meetingItem__link"})["data-race-id"]
+            self.rp_url = raw_card.find("a", {"class": "RC-meetingItem__link"})["href"]
+            self.race_time = raw_card.find("span", {"class": "RC-meetingItem__timeLabel"}).text.strip()
+            my_words = raw_card.find("span", {"class": "RC-meetingItem__goingData"}).text.split()
+            self.race_class = " ".join(my_words[0:-1])
+            self.distance = my_words[-1]
+            self.field = raw_card.find("span", {"class": "RC-meetingItem__numberOfRunners"}).text.strip()
+        except: None
         self.set_tote_url()
         self.extract_rp_runners()
 
@@ -323,10 +325,12 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
     mtg.name = name
     print(f"Collecting {name}")
     mtg.race_date = date.today().strftime('%Y-%m-%d')
+    #TODO - get proper date
     mtg.start = raw_mtg.find("span", {"data-test-selector": "RC-accordion__firstRaceTime"}).text.strip()
     mtg.type = raw_mtg.find("span", {"class": "RC-accordion__meetingType"}).text.strip()
     mtg.going = raw_mtg.find("div", {"class": "RC-courseDescription__info"}).text.strip()
     raw_racecards = raw_mtg.findAll("div", {"class": "RC-meetingItem"})
+    #TODO - here we need to catch half abandoned races
     leg = 0
     for raw_racecard in raw_racecards:
         leg += 1
@@ -334,5 +338,5 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
         card.mtgname = name
         card.leg = leg
         card.extract_rp_racecard(raw_racecard)
-        mtg.races.append(card)
+        if card is not None: mtg.races.append(card)
     return mtg
