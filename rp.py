@@ -319,7 +319,7 @@ class Nag:
 
     def set_placed(self, runners):
         try:
-            place = int(self.result.strip()[0])
+            place = int(self.result.split()[0])
         except:
             place = 99
         if runners < 5:
@@ -376,9 +376,16 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
 my_mtgs = read_mtgs_from_directory("mtg")
 for mtg in my_mtgs:
     for race in mtg.races:
+        my_nags = race.nags
+        if isinstance(race.nags, list):
+            my_dict = {}
+            my_dict = {nag.name: nag for nag in my_nags}
+            race.nags = my_dict
         for nag in race.nags.values():
             if nag.placed:
                 nag.pp_placed = True
+            else:
+                nag.pp_placed = False
         race.set_rp_forecast_chance()
         race.set_sp_chance()
     print(f"Saving {mtg.name} - {mtg.race_date}")
