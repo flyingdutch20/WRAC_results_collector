@@ -372,8 +372,8 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
 
 # my_mtg = unpickle_mtg("mtg\\2020-10-17-ascot.picle")
 
-
-my_mtgs = read_mtgs_from_directory("mtg")
+"""
+my_mtgs = read_mtgs_from_directory("mtgs-no-placechance")
 for mtg in my_mtgs:
     for race in mtg.races:
         my_nags = race.nags
@@ -390,3 +390,4 @@ for mtg in my_mtgs:
         race.set_sp_chance()
     print(f"Saving {mtg.name} - {mtg.race_date}")
     mtg.writemtg()
+"""
