@@ -28,8 +28,17 @@ def read_racingpost_index(sel_mtg, collect_pp, results):
             print(f"Saving {mtg.name}")
             mtg.writemtg()
 
+def read_mtgs_from_directory(dir):
+    result = []
+    for entry in os.listdir(dir):
+        my_file = os.path.join(dir, entry)
+        if os.path.isfile(my_file):
+            mtg = unpickle_mtg(my_file)
+            result.append(mtg) if mtg is not None else None
+    return result
 
-def load_meeting_and_collect_results(filename, collect_pp, results):
+
+def unpickle_mtg(filename):
     with open(filename, "rb") as mtgfile:
         mtg = None
         try:
@@ -37,10 +46,11 @@ def load_meeting_and_collect_results(filename, collect_pp, results):
         except Exception:
             print(f"Can't unpickle {filename}")
         if isinstance(mtg, Meeting):
-            print("We have a meeting")
-            mtg.collect_results(collect_pp, results)
-            print(f"Saving {mtg.name}")
-            mtg.writemtg()
+            print(f"Meeting {mtg.name} - {mtg.race_date} loaded")
+            return mtg
+        else:
+            return None
+
 
 
 def getpage(url, name):
@@ -358,3 +368,18 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
         card.extract_rp_racecard(raw_racecard)
         if card is not None: mtg.races.append(card)
     return mtg
+
+
+# my_mtg = unpickle_mtg("mtg\\2020-10-17-ascot.picle")
+
+
+my_mtgs = read_mtgs_from_directory("mtg")
+for mtg in my_mtgs:
+    for race in mtg.races:
+        for nag in race.nags.values():
+            if nag.placed:
+                nag.pp_placed = True
+        race.set_rp_forecast_chance()
+        race.set_sp_chance()
+    print(f"Saving {mtg.name} - {mtg.race_date}")
+    mtg.writemtg()
