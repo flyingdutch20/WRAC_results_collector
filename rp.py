@@ -390,4 +390,5 @@ for mtg in my_mtgs:
         race.set_sp_chance()
     print(f"Saving {mtg.name} - {mtg.race_date}")
     mtg.writemtg()
+
 """
