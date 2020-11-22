@@ -7,6 +7,7 @@ import pickle
 import tote
 import copy
 import odds
+import db
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
@@ -50,7 +51,6 @@ def unpickle_mtg(filename):
             return mtg
         else:
             return None
-
 
 
 def getpage(url, name):
@@ -99,6 +99,24 @@ class Meeting:
         my_dict = {mtgkey: ser}
         with open(pathname + ".json", "w") as output:
             json.dump(my_dict, output)
+
+    def write_mtg_to_db(self, db_name):
+        connection = db.create_connection(db_name)
+        db.execute_query(connection, self.insert_sql())
+        db_mtg_key = db.execute_read_query(connection, self.retrieve_key_sql(), all=False)[0]
+        for race in self.races:
+            race.write_race_to_db(connection, db_mtg_key)
+
+    def insert_sql(self):
+        sql = f"""INSERT INTO meeting
+            (name, race_date, start, type, going, stalls, pp_pool, pp_div)
+            VALUES ('{self.name}', '{self.race_date}', '{self.start}', '{self.type}', 
+                    '{self.going}', '{self.stalls}', {self.pp_pool}, {self.pp_div});"""
+        return sql
+
+    def retrieve_key_sql(self):
+        sql = f"""SELECT id FROM meeting WHERE name = '{self.name}' AND race_date = '{self.race_date}'"""
+        return sql
 
     def collect_results(self, collect_pp, results):
         if collect_pp:
@@ -150,6 +168,26 @@ class Racecard:
         for key, nag in self.nags.items():
             card.nags[key] = nag.__dict__
         return card.__dict__
+
+    def write_race_to_db(self, connection, db_mtg_key):
+        db.execute_query(connection, self.insert_sql(db_mtg_key))
+        db_race_key = db.execute_read_query(connection, self.retrieve_key_sql(db_mtg_key), all=False)[0]
+        for nag in self.nags.values():
+            nag.write_nag_to_db(connection, db_race_key)
+
+    def insert_sql(self, db_mtg_key):
+        sql = f"""INSERT INTO race
+                (name, race_time, race_class, distance, 
+                field, verdict, pp_fav, pp_fav_perc, pp_nr, 
+                pp_pool, leg, meeting_id)
+            VALUES ('{self.name}', '{self.race_time}', '{self.race_class}', '{self.distance}', 
+                    '{self.field}', '{self.verdict}', {self.pp_fav}, '{self.pp_fav_perc}', {self.pp_nr}, 
+                    '{self.pp_pool}', {self.leg}, {db_mtg_key});"""
+        return sql
+
+    def retrieve_key_sql(self, db_mtg_key):
+        sql = f"""SELECT id FROM race WHERE leg = {self.leg} AND meeting_id = {db_mtg_key}"""
+        return sql
 
     def find_nag(self, tote_nag):
         return self.find_nag_by_name(tote_nag.name.lower()) if not None \
@@ -301,6 +339,47 @@ class Nag:
         self.sp_win_chance = 0
         self.sp_place_chance = 0
 
+    def write_nag_to_db(self, connection, db_race_key):
+        db.execute_query(connection, self.insert_sql(db_race_key))
+
+    def insert_sql(self, db_race_key):
+        name = getattr(self, 'name', '')
+        no = getattr(self, 'no', '')
+        draw = getattr(self, 'draw', '')
+        lastrun = getattr(self, 'lastrun', '')
+        form = getattr(self, 'form', '')
+        age = getattr(self, 'age', '')
+        jockey = getattr(self, 'jockey', '')
+        trainer = getattr(self, 'trainer', '')
+        ts = getattr(self, 'ts', '')
+        rpr = getattr(self, 'rpr', '')
+        rp_comment = getattr(self, 'rp_comment', '')
+        rp_forecast = getattr(self, 'rp_forecast', '')
+        result = getattr(self, 'result', '')
+        sp = getattr(self, 'sp', '')
+        fav = getattr(self, 'fav', '')
+        race_comment = getattr(self, 'race_comment', '')
+        pp_pool = getattr(self, 'pp_pool', '')
+        pp_pool_perc = getattr(self, 'pp_pool_perc', '')
+        pp_placed = 1 if getattr(self, 'pp_placed', False) else 0
+        placed = 1 if getattr(self, 'placed', False) else 0
+        rp_forecast_win_chance = getattr(self, 'rp_forecast_win_chance', 0)
+        rp_forecast_place_chance = getattr(self, 'rp_forecast_place_chance', 0)
+        sp_win_chance = getattr(self, 'sp_win_chance', 0)
+        sp_place_chance = getattr(self, 'sp_place_chance', 0)
+        sql = f"""INSERT INTO nag
+                (name, no, draw, lastrun, form, age, 
+                jockey, trainer, ts, rpr, rp_comment, rp_forecast, 
+                result, sp, fav, race_comment, pp_pool, pp_pool_perc, 
+                pp_placed, placed, rp_forecast_win_chance, rp_forecast_place_chance, 
+                sp_win_chance, sp_place_chance, race_id)
+            VALUES ('{name}', '{no}', '{draw}', '{lastrun}', '{form}', '{age}', 
+                '{jockey}', '{trainer}', '{ts}', '{rpr}', '{rp_comment}', '{rp_forecast}', 
+                '{result}', '{sp}', '{fav}', '{race_comment}', '{pp_pool}', '{pp_pool_perc}', 
+                {pp_placed}, {placed}, {rp_forecast_win_chance}, {rp_forecast_place_chance}, 
+                {sp_win_chance}, {sp_place_chance}, {db_race_key});"""
+        return sql
+
     def extract_rp_nag(self, raw_nag):
         self.rp_id = raw_nag["data-ugc-runnerid"]
         self.name = find_or_empty(raw_nag, "a", "RC-runnerName")
@@ -391,4 +470,15 @@ for mtg in my_mtgs:
     print(f"Saving {mtg.name} - {mtg.race_date}")
     mtg.writemtg()
 
+"""
+"""
+mtg = unpickle_mtg("./meetings/2020-11-05-newbury.pickle")
+mtg.write_mtg_to_db("./test_db/test_db.sqlite")
+
+"""
+
+"""
+Two problems:
+Quotes in the name of a race Jockey's hurdle
+If race fails, then select query returns Null which makes it crash
 """
