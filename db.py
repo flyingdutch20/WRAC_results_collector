@@ -1,16 +1,20 @@
 import os
 import sqlite3
+import logging
+
+
+logger = logging.getLogger("Placepot")
 
 def create_connection(path):
     connection = None
     try:
         connection = sqlite3.connect('file:path?mode=rw', uri=True)
-        print(f"Connection to SQLite DB {path} successful")
+        logger.info(f"Connection to SQLite DB {path} successful")
     except sqlite3.DatabaseError as e:
-        print (f"The error '{e}' occurred, I am going to create the database")
+        logger.error(f"The error '{e}' occurred, I am going to create the database")
         connection = create_database(path)
     except sqlite3.Error as e:
-        print(f"The error '{e}' occurred, I am stopping")
+        logger.error(f"The error '{e}' occurred, I am stopping")
     return connection
 
 def create_database(path):
@@ -20,9 +24,9 @@ def create_database(path):
         os.makedirs(dirs)
     try:
         connection = sqlite3.connect(path)
-        print(f"Database {path} created")
+        logger.info(f"Database {path} created")
     except sqlite3.Error as e:
-        print(f"The error '{e}' occurred, I am stopping")
+        logger.error(f"The error '{e}' occurred, I am stopping")
     else:
         execute_query(connection, create_meeting_table)
         execute_query(connection, create_meeting_index)
@@ -37,9 +41,9 @@ def execute_query(connection, query):
     try:
         cursor.execute(query)
         connection.commit()
-        print("Query executed successfully")
+        logger.debug("Query executed successfully")
     except sqlite3.Error as e:
-        print(f"The error '{e}' occurred")
+        logger.error(f"The error '{e}' occurred")
 
 def execute_read_query(connection, query, all=True):
     cursor = connection.cursor()
@@ -49,7 +53,7 @@ def execute_read_query(connection, query, all=True):
         result = cursor.fetchall() if all else cursor.fetchone()
         return result
     except sqlite3.Error as e:
-        print(f"The error '{e}' occurred")
+        logger.error(f"The error '{e}' occurred")
 
 #Don't use AUTOINCREMENT on primary key - it will automatically become the rowid
 

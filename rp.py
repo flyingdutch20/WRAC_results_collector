@@ -8,6 +8,19 @@ import tote
 import copy
 import odds
 import db
+import logging
+import re
+
+
+logger = logging.getLogger("Placepot")
+logger.basicConfig(filename='sql_testing.log', filemode='w',
+                    level=logging.DEBUG,
+                    format='%(asctime)s - %(level)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S')
+logger.debug('This message should go to the log file')
+logger.info('So should this')
+logger.warning('And this, too')
+logger.error('And non-ASCII stuff, too, like Øresund and Malmö')
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
@@ -24,10 +37,13 @@ def read_racingpost_index(sel_mtg, collect_pp, results):
     raw_meetings = bs.findAll("section", {"class": "ui-accordion__row"})
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg, sel_mtg)
+        no_of_mtgs = 0
         if mtg is not None:
+            no_of_mtgs += 1
             mtg.collect_results(collect_pp, results)
-            print(f"Saving {mtg.name}")
+            logger.info(f"Saving {mtg.name}")
             mtg.writemtg()
+        print(f"Saved {no_of_mtgs} meetings.")
 
 def read_mtgs_from_directory(dir):
     result = []
@@ -45,9 +61,9 @@ def unpickle_mtg(filename):
         try:
             mtg = pickle.load(mtgfile)
         except Exception:
-            print(f"Can't unpickle {filename}")
+            logger.error(f"Can't unpickle {filename}")
         if isinstance(mtg, Meeting):
-            print(f"Meeting {mtg.name} - {mtg.race_date} loaded")
+            logger.info(f"Meeting {mtg.name} - {mtg.race_date} loaded")
             return mtg
         else:
             return None
@@ -56,7 +72,7 @@ def unpickle_mtg(filename):
 def getpage(url, name):
     r = requests.get(url)
     if r.status_code > 299:
-        print(f"No results available for {name}")
+        logger.info(f"No results available for {name}")
         return ""
     html = r.text
     return html
@@ -67,6 +83,61 @@ def find_or_empty(bs, key, search):
         return ""
     s = bs.find(key, {"class": search})
     return s.text.strip() if s is not None else ""
+
+
+def get_value_for_string(obj, strg):
+    value = str(getattr(obj, strg, '')).replace("'", "''")
+    value = "'" + value + "'"
+#    logger.debug(f'get_value_for_string: {value}')
+    return value
+
+def get_values_for_strings(obj, strgs):
+    my_str = ', '.join([get_value_for_string(obj, val) for val in strgs])
+    logger.debug(f'get_values_for_strings: {my_str}')
+    return my_str
+
+def get_value_for_number(obj, strg):
+    value = getattr(obj, strg, 0)
+#    logger.debug(f'get_value_for_number({obj}, {strg}: {value}')
+    nmbr = value if strg == 'leg' else make_pp_pool_nmbr(value)
+#    logger.debug(f'make_pp_pool_nmbr({value}: {nmbr}')
+#    logger.debug(f'get_value_for_number: {str(nmbr)}')
+    return str(nmbr)
+
+def get_values_for_numbers(obj, nmbrs):
+    my_str = ', '.join([get_value_for_number(obj, val) for val in nmbrs])
+    logger.debug(f'get_values_for_numbers: {my_str}')
+    return my_str
+
+def get_value_for_bool(obj, strg):
+    value = getattr(obj, strg, False)
+#    logger.debug(f'get_value_for_bool: {value}')
+    return "1" if value else "0"
+
+def get_values_for_bools(obj, bools):
+    my_str = ', '.join([get_value_for_bool(obj, val) for val in bools])
+    logger.debug(f'get_values_for_bools: {my_str}')
+    return my_str
+
+pp_strip = re.compile("[-A-Za-z£,%() ]")
+
+def make_pp_pool_nmbr(pp_units):
+    """
+    race - pp_pool: "£33,014.24 - Won"
+    nag - pp_pool: "39.3"
+    nag - pp_pool: 0
+    nag - pp_pool: "Not backed"
+    nag - pp_pool_perc: "(1%)"
+    nag - pp_pool_perc: ""
+    nag - pp_pool_perc: 0
+    """
+    stripped = pp_strip.sub("", str(pp_units))
+    try:
+        result = float(stripped)
+    except Exception:
+        result = 0
+    logger.debug(f"make_pp_pool_nmbr({pp_units}) converted to {result}")
+    return result
 
 
 class Meeting:
@@ -104,26 +175,29 @@ class Meeting:
         connection = db.create_connection(db_name)
         db.execute_query(connection, self.insert_sql())
         db_mtg_key = db.execute_read_query(connection, self.retrieve_key_sql(), all=False)[0]
-        for race in self.races:
-            race.write_race_to_db(connection, db_mtg_key)
+        if db_mtg_key is not None:
+            for race in self.races:
+                race.write_race_to_db(connection, db_mtg_key)
 
     def insert_sql(self):
-        sql = f"""INSERT INTO meeting
-            (name, race_date, start, type, going, stalls, pp_pool, pp_div)
-            VALUES ('{self.name}', '{self.race_date}', '{self.start}', '{self.type}', 
-                    '{self.going}', '{self.stalls}', {self.pp_pool}, {self.pp_div});"""
+        strings = ["name", "race_date", "start", "type", "going", "stalls"]
+        numbers = ["pp_pool", "pp_div"]
+        strg_vals = get_values_for_strings(self, strings)
+        nmbr_vals = get_values_for_numbers(self, numbers)
+        values = ', '.join([strg_vals, nmbr_vals])
+        sql = f"INSERT INTO meeting ({', '.join(strings)}, {', '.join(numbers)}) VALUES ({values});"
         return sql
 
     def retrieve_key_sql(self):
-        sql = f"""SELECT id FROM meeting WHERE name = '{self.name}' AND race_date = '{self.race_date}'"""
+        sql = f"SELECT id FROM meeting WHERE name = '{self.name}' AND race_date = '{self.race_date}'"
         return sql
 
     def collect_results(self, collect_pp, results):
         if collect_pp:
-            print(f"Collecting Tote pp for {self.name}")
+            logger.info(f"Collecting Tote pp for {self.name}")
             self.collect_ppresult()
         if results:
-            print(f"Collecting RP results for {self.name}")
+            logger.info(f"Collecting RP results for {self.name}")
             self.collect_rpresult()
 
     def collect_ppresult(self):
@@ -136,6 +210,8 @@ class Meeting:
             for card in self.races:
                 if card.leg == result.leg:
                     card.set_toteresult(result)
+                if card.leg == 1:
+                    self.pp_pool = card.pp_pool
 
     def collect_rpresult(self):
         # collect the results from rp if they are there
@@ -172,17 +248,17 @@ class Racecard:
     def write_race_to_db(self, connection, db_mtg_key):
         db.execute_query(connection, self.insert_sql(db_mtg_key))
         db_race_key = db.execute_read_query(connection, self.retrieve_key_sql(db_mtg_key), all=False)[0]
-        for nag in self.nags.values():
-            nag.write_nag_to_db(connection, db_race_key)
+        if db_race_key is not None:
+            for nag in self.nags.values():
+                nag.write_nag_to_db(connection, db_race_key)
 
     def insert_sql(self, db_mtg_key):
-        sql = f"""INSERT INTO race
-                (name, race_time, race_class, distance, 
-                field, verdict, pp_fav, pp_fav_perc, pp_nr, 
-                pp_pool, leg, meeting_id)
-            VALUES ('{self.name}', '{self.race_time}', '{self.race_class}', '{self.distance}', 
-                    '{self.field}', '{self.verdict}', {self.pp_fav}, '{self.pp_fav_perc}', {self.pp_nr}, 
-                    '{self.pp_pool}', {self.leg}, {db_mtg_key});"""
+        strings = ["name", "race_time", "race_class", "distance", "field", "verdict"]
+        numbers = ["pp_pool", "pp_fav", "pp_fav_perc", "pp_nr", "leg"]
+        strg_vals = get_values_for_strings(self, strings)
+        nmbr_vals = get_values_for_numbers(self, numbers)
+        values = ', '.join([strg_vals, nmbr_vals, f"{db_mtg_key}"])
+        sql = f"INSERT INTO race ({', '.join(strings)}, {', '.join(numbers)}, meeting_id) VALUES ({values});"
         return sql
 
     def retrieve_key_sql(self, db_mtg_key):
@@ -220,7 +296,7 @@ class Racecard:
 
     def extract_rp_runners(self):
         fn_time = "_".join(self.race_time.split(":"))
-        print(f"Collecting {self.mtgname} - {self.race_time}", )
+        logger.info(f"Collecting {self.mtgname} - {self.race_time}", )
         fn_name = self.mtgname + "_" + fn_time
         # Verdict page
         verdictpage = getpage("https://www.racingpost.com/racecards/data/accordion/" + self.rp_id, fn_name + "_verdict")
@@ -257,9 +333,9 @@ class Racecard:
 
     def set_toteresult(self, result):
         # extract the details of result into card
-        self.pp_pool = result.pool
-        self.pp_fav = result.fav_pp
-        self.pp_fav_perc = result.fav_pp_perc
+        self.pp_pool = make_pp_pool_nmbr(result.pool)
+        self.pp_fav = make_pp_pool_nmbr(result.fav_pp)
+        self.pp_fav_perc = make_pp_pool_nmbr(result.fav_pp_perc)
         # run through the nags and find mapping nag, then extract results back into here
         for pp_nag in result.pp_nags:
             nag = self.find_nag(pp_nag)
@@ -267,14 +343,14 @@ class Racecard:
                 #   map the individual fields
                 nag.placed = pp_nag.placed
                 nag.pp_placed = pp_nag.placed
-                nag.pp_pool = pp_nag.pp_units
-                nag.pp_pool_perc = pp_nag.pp_percent
+                nag.pp_pool = make_pp_pool_nmbr(pp_nag.pp_units)
+                nag.pp_pool_perc = make_pp_pool_nmbr(pp_nag.pp_percent)
 
     def collect_rpresult(self):
         # collect the results from the racingpost page
         fn_time = "_".join(self.race_time.split(":"))
         fn_name = f"{self.mtgname}_{fn_time}"
-        print(f"Collecting results for {fn_name}")
+        logger.info(f"Collecting results for {fn_name}")
         resultsurl = "https://www.racingpost.com" + self.rp_url.replace("racecards", "results")
         resultspage = getpage(resultsurl, fn_name + "_result")
         runners_bs = BeautifulSoup(resultspage, "html.parser")
@@ -331,7 +407,7 @@ class Nag:
         self.fav = ""
         self.race_comment = ""
         self.pp_pool = 0
-        self.pp_pool_perc = ""
+        self.pp_pool_perc = 0
         self.pp_placed = False
         self.placed = False
         self.rp_forecast_win_chance = 0
@@ -343,41 +419,16 @@ class Nag:
         db.execute_query(connection, self.insert_sql(db_race_key))
 
     def insert_sql(self, db_race_key):
-        name = getattr(self, 'name', '')
-        no = getattr(self, 'no', '')
-        draw = getattr(self, 'draw', '')
-        lastrun = getattr(self, 'lastrun', '')
-        form = getattr(self, 'form', '')
-        age = getattr(self, 'age', '')
-        jockey = getattr(self, 'jockey', '')
-        trainer = getattr(self, 'trainer', '')
-        ts = getattr(self, 'ts', '')
-        rpr = getattr(self, 'rpr', '')
-        rp_comment = getattr(self, 'rp_comment', '')
-        rp_forecast = getattr(self, 'rp_forecast', '')
-        result = getattr(self, 'result', '')
-        sp = getattr(self, 'sp', '')
-        fav = getattr(self, 'fav', '')
-        race_comment = getattr(self, 'race_comment', '')
-        pp_pool = getattr(self, 'pp_pool', '')
-        pp_pool_perc = getattr(self, 'pp_pool_perc', '')
-        pp_placed = 1 if getattr(self, 'pp_placed', False) else 0
-        placed = 1 if getattr(self, 'placed', False) else 0
-        rp_forecast_win_chance = getattr(self, 'rp_forecast_win_chance', 0)
-        rp_forecast_place_chance = getattr(self, 'rp_forecast_place_chance', 0)
-        sp_win_chance = getattr(self, 'sp_win_chance', 0)
-        sp_place_chance = getattr(self, 'sp_place_chance', 0)
-        sql = f"""INSERT INTO nag
-                (name, no, draw, lastrun, form, age, 
-                jockey, trainer, ts, rpr, rp_comment, rp_forecast, 
-                result, sp, fav, race_comment, pp_pool, pp_pool_perc, 
-                pp_placed, placed, rp_forecast_win_chance, rp_forecast_place_chance, 
-                sp_win_chance, sp_place_chance, race_id)
-            VALUES ('{name}', '{no}', '{draw}', '{lastrun}', '{form}', '{age}', 
-                '{jockey}', '{trainer}', '{ts}', '{rpr}', '{rp_comment}', '{rp_forecast}', 
-                '{result}', '{sp}', '{fav}', '{race_comment}', '{pp_pool}', '{pp_pool_perc}', 
-                {pp_placed}, {placed}, {rp_forecast_win_chance}, {rp_forecast_place_chance}, 
-                {sp_win_chance}, {sp_place_chance}, {db_race_key});"""
+        strings = ["name", "no", "draw", "lastrun", "form", "age", "jockey", "trainer", "ts", "rpr",
+                   "rp_comment", "rp_forecast", "result", "sp", "fav", "race_comment"]
+        bools = ["pp_placed", "placed"]
+        numbers = ["pp_pool", "pp_pool_perc", "rp_forecast_win_chance", "rp_forecast_place_chance",
+                   "sp_win_chance", "sp_place_chance"]
+        strg_vals = get_values_for_strings(self, strings)
+        bool_vals = get_values_for_bools(self, bools)
+        nmbr_vals = get_values_for_numbers(self, numbers)
+        values = ', '.join([strg_vals, bool_vals, nmbr_vals, f"{db_race_key}"])
+        sql = f"INSERT INTO nag ({', '.join(strings)}, {', '.join(bools)}, {', '.join(numbers)}, race_id) VALUES ({values});"
         return sql
 
     def extract_rp_nag(self, raw_nag):
@@ -430,7 +481,7 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
         return None
     mtg = Meeting()
     mtg.name = name
-    print(f"Collecting {name}")
+    logger.info(f"Collecting {name}")
     mtg.race_date = date.today().strftime('%Y-%m-%d')
     #TODO - get proper date
     mtg.start = raw_mtg.find("span", {"data-test-selector": "RC-accordion__firstRaceTime"}).text.strip()
@@ -472,13 +523,8 @@ for mtg in my_mtgs:
 
 """
 """
-mtg = unpickle_mtg("./meetings/2020-11-05-newbury.pickle")
+import rp
+mtg = rp.unpickle_mtg("./meetings/2020-11-03-newcastle.pickle")
 mtg.write_mtg_to_db("./test_db/test_db.sqlite")
-
 """
 
-"""
-Two problems:
-Quotes in the name of a race Jockey's hurdle
-If race fails, then select query returns Null which makes it crash
-"""
