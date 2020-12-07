@@ -382,7 +382,15 @@ class Racecard:
             nag.sp_win_chance = chance[0]
             nag.sp_place_chance = chance[1]
             nag.set_placed(len(self.nags))
+        #TODO should use the number of starters - exclude the N/R
+        #TODO set the starters on the race retrospectively
+        #TODO have N/R flag on runners
 
+    def set_rp_ppvalue(self):
+        None
+
+    def set_sp_ppvalue(self):
+        None
 
 class Nag:
     def __init__(self):
@@ -414,6 +422,9 @@ class Nag:
         self.rp_forecast_place_chance = 0
         self.sp_win_chance = 0
         self.sp_place_chance = 0
+        self.nr = False
+        self.rp_pp_value = 0
+        self.sp_pp_value = 0
 
     def write_nag_to_db(self, connection, db_race_key):
         db.execute_query(connection, self.insert_sql(db_race_key))
@@ -503,7 +514,7 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
 # my_mtg = unpickle_mtg("mtg\\2020-10-17-ascot.picle")
 
 """
-my_mtgs = read_mtgs_from_directory("mtgs-no-placechance")
+my_mtgs = read_mtgs_from_directory("mtg")
 for mtg in my_mtgs:
     for race in mtg.races:
         my_nags = race.nags
@@ -524,7 +535,8 @@ for mtg in my_mtgs:
 """
 """
 import rp
-mtg = rp.unpickle_mtg("./meetings/2020-11-03-newcastle.pickle")
-mtg.write_mtg_to_db("./test_db/test_db.sqlite")
+my_mtgs = rp.read_mtgs_from_directory("mtg")
+for mtg my_mtgs:
+    mtg.write_mtg_to_db("./test_db/test_db.sqlite")
 """
 
