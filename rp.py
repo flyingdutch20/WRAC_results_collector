@@ -10,6 +10,7 @@ import odds
 import db
 import logging
 import re
+import pp_value
 
 
 logger = logging.getLogger("Placepot")
@@ -387,10 +388,17 @@ class Racecard:
         #TODO have N/R flag on runners
 
     def set_rp_ppvalue(self):
-        None
+        rp_val = [{nag.name : [nag.pp_pool, nag.rp_forecast_place_chance]} for nag in self.nags.values()]
+        rp_val_dict = pp_value.calc_pp_value(rp_val)
+        for nag in self.nags:
+            nag.rp_pp_value = rp_val_dict.get(nag, 0)
 
     def set_sp_ppvalue(self):
-        None
+        sp_val_list = [{nag.name : [nag.pp_pool, nag.sp_place_chance]} for nag in self.nags.values()]
+        sp_val_dict = pp_value.calc_pp_value(sp_val_list)
+        for nag in self.nags:
+            nag.sp_pp_value = sp_val_dict.get(nag, 0)
+
 
 class Nag:
     def __init__(self):
