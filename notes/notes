@@ -14,3 +14,7 @@ nag pp_pool: "Not backed"
 nag pp_pool_perc: "(1%)"
 nag pp_pool_perc: ""
 nag pp_pool_perc: 0
+
+import rp
+mtg = rp.unpickle_mtg("./test_meetings/2020-11-17-southwell.pickle")
+race = mtg.races[0]

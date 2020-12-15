@@ -14,10 +14,11 @@ import pp_value
 
 
 logger = logging.getLogger("Placepot")
-logger.basicConfig(filename='sql_testing.log', filemode='w',
+"""logger.basicConfig(filename='sql_testing.log', filemode='w',
                     level=logging.DEBUG,
                     format='%(asctime)s - %(level)s - %(message)s',
                     datefmt='%d-%b-%y %H:%M:%S')
+"""
 logger.debug('This message should go to the log file')
 logger.info('So should this')
 logger.warning('And this, too')
@@ -388,10 +389,12 @@ class Racecard:
         #TODO have N/R flag on runners
 
     def set_rp_ppvalue(self):
-        rp_val = [{nag.name : [nag.pp_pool, nag.rp_forecast_place_chance]} for nag in self.nags.values()]
+        rp_val = {}
+        for nag in self.nags.values():
+            rp_val[nag.name] = [float(nag.pp_pool), nag.rp_forecast_win_chance]
         rp_val_dict = pp_value.calc_pp_value(rp_val)
-        for nag in self.nags:
-            nag.rp_pp_value = rp_val_dict.get(nag, 0)
+        for nag in self.nags.values():
+            nag.rp_pp_value = rp_val_dict.get(nag.name, 0)
 
     def set_sp_ppvalue(self):
         sp_val_list = [{nag.name : [nag.pp_pool, nag.sp_place_chance]} for nag in self.nags.values()]
