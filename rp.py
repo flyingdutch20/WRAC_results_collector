@@ -43,6 +43,7 @@ def read_racingpost_index(sel_mtg, collect_pp, results):
         if mtg is not None:
             no_of_mtgs += 1
             mtg.collect_results(collect_pp, results)
+            mtg.set_ppvalue()
             logger.info(f"Saving {mtg.name}")
             mtg.writemtg()
         print(f"Saved {no_of_mtgs} meetings.")
@@ -220,6 +221,12 @@ class Meeting:
         for race in self.races:
             race.collect_rpresult()
 
+    def set_ppvalue(self):
+        # collect the results from rp if they are there
+        for race in self.races:
+            race.set_rp_ppvalue()
+            race.set_sp_ppvalue()
+
 
 class Racecard:
     def __init__(self):
@@ -391,16 +398,30 @@ class Racecard:
     def set_rp_ppvalue(self):
         rp_val = {}
         for nag in self.nags.values():
-            rp_val[nag.name] = [float(nag.pp_pool), nag.rp_forecast_win_chance]
+            try:
+                pool = float(nag.pp_pool)
+            except:
+                pool = 0.0001
+            if pool == 0:
+                pool = 0.0001
+            rp_val[nag.name] = [pool, nag.rp_forecast_win_chance]
         rp_val_dict = pp_value.calc_pp_value(rp_val)
         for nag in self.nags.values():
             nag.rp_pp_value = rp_val_dict.get(nag.name, 0)
 
     def set_sp_ppvalue(self):
-        sp_val_list = [{nag.name : [nag.pp_pool, nag.sp_place_chance]} for nag in self.nags.values()]
-        sp_val_dict = pp_value.calc_pp_value(sp_val_list)
-        for nag in self.nags:
-            nag.sp_pp_value = sp_val_dict.get(nag, 0)
+        sp_val = {}
+        for nag in self.nags.values():
+            try:
+                pool = float(nag.pp_pool)
+            except:
+                pool = 0.0001
+            if pool == 0:
+                pool = 0.0001
+            sp_val[nag.name] = [pool, nag.sp_win_chance]
+        sp_val_dict = pp_value.calc_pp_value(sp_val)
+        for nag in self.nags.values():
+            nag.sp_pp_value = sp_val_dict.get(nag.name, 0)
 
 
 class Nag:

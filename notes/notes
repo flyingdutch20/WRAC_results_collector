@@ -17,4 +17,5 @@ nag pp_pool_perc: 0
 
 import rp
 mtg = rp.unpickle_mtg("./test_meetings/2020-11-17-southwell.pickle")
-race = mtg.races[0]
+for race in mtg.races:
+    race.set_rp_ppvalue()
