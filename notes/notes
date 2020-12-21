@@ -16,6 +16,8 @@ nag pp_pool_perc: ""
 nag pp_pool_perc: 0
 
 import rp
-mtg = rp.unpickle_mtg("./test_meetings/2020-11-17-southwell.pickle")
+mtg = rp.unpickle_mtg("./test_meetings/2020-11-14-wetherby.pickle")
 for race in mtg.races:
+    race.set_rp_forecast_chance()
     race.set_rp_ppvalue()
+mtg.write_summary_to_csv()

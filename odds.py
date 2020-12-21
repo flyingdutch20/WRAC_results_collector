@@ -34,10 +34,11 @@ class nag:
         odds = re.sub(r'[JF]$', '', odds)
         if odds == "Evs":
             self.fraction = Fraction(1)
-        try:
-            self.fraction = Fraction(odds)
-        except ValueError:
-            self.fraction = 0
+        else:
+            try:
+                self.fraction = Fraction(odds)
+            except ValueError:
+                self.fraction = 0
 
     def set_inverse(self):
         if self.fraction > 0:
