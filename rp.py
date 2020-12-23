@@ -185,10 +185,11 @@ class Meeting:
             writer.writerow([f"Meeting: {self.name} date: {self.race_date}"])
             for race in self.races:
                 writer.writerow([f"Race leg {race.leg} - {race.race_time} - {race.name}"])
-                writer.writerow(["Name", "Result", "PP pool", "PP pool perc", "Perc", "RP Forecast", "RP Win chance", "RP Place chance", "RP PP value"])
+                writer.writerow(["Name", "Result", "PP pool", "PP pool perc", "Perc", "RP Forecast", "RP Win chance", "RP Place chance", "RP PP value", "SP", "SP Win chance", "SP Place chance", "SP PP value"])
                 for nag in race.nags.values():
                     writer.writerow([nag.name, nag.result, nag.pp_pool, nag.pp_pool_perc, nag.pp_pool_perc_calc,
-                                     f"({nag.rp_forecast})", nag.rp_forecast_win_chance, nag.rp_forecast_place_chance, nag.rp_pp_value])
+                                     f"({nag.rp_forecast})", nag.rp_forecast_win_chance, nag.rp_forecast_place_chance, nag.rp_pp_value,
+                                     f"({nag.sp})", nag.sp_win_chance, nag.sp_place_chance, nag.sp_pp_value])
 
     def write_mtg_to_db(self, db_name):
         connection = db.create_connection(db_name)
@@ -419,7 +420,7 @@ class Racecard:
             except:
                 pool = 0
             if nag.rp_forecast_win_chance > 0:
-                rp_val[nag.name] = [pool, nag.rp_forecast_win_chance, nag.rp_forecast_place_chance]
+                rp_val[nag.name] = [pool, nag.rp_forecast_win_chance, nag.rp_forecast_place_chance, nag.sp_win_chance]
         rp_val_dict = pp_value.calc_pp_value(rp_val)
         for nag in self.nags.values():
             try:
@@ -437,10 +438,15 @@ class Racecard:
             except:
                 pool = 0
             if nag.sp_win_chance > 0:
-                sp_val[nag.name] = [pool, nag.sp_win_chance]
+                sp_val[nag.name] = [pool, nag.sp_win_chance, nag.sp_place_chance, nag.sp_win_chance]
         sp_val_dict = pp_value.calc_pp_value(sp_val)
         for nag in self.nags.values():
-            nag.sp_pp_value = sp_val_dict.get(nag.name, 0)
+            try:
+                nag.pp_pool_perc_calc = sp_val_dict[nag.name][0]
+                nag.sp_pp_value = sp_val_dict[nag.name][1]
+            except:
+                nag.pp_pool_perc_calc = 0
+                nag.sp_pp_value = 0
 
 
 class Nag:

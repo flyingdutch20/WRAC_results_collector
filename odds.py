@@ -32,7 +32,7 @@ class nag:
 
     def set_fraction(self, odds):
         odds = re.sub(r'[JF]$', '', odds)
-        if odds == "Evs":
+        if odds[0:2] == "Ev":
             self.fraction = Fraction(1)
         else:
             try:
