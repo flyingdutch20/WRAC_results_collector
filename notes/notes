@@ -15,11 +15,52 @@ nag pp_pool_perc: "(1%)"
 nag pp_pool_perc: ""
 nag pp_pool_perc: 0
 
+"""
+my_mtgs = read_mtgs_from_directory("mtg")
+for mtg in my_mtgs:
+    for race in mtg.races:
+        my_nags = race.nags
+        if isinstance(race.nags, list):
+            my_dict = {}
+            my_dict = {nag.name: nag for nag in my_nags}
+            race.nags = my_dict
+        for nag in race.nags.values():
+            if nag.placed:
+                nag.pp_placed = True
+            else:
+                nag.pp_placed = False
+        race.set_rp_forecast_chance()
+        race.set_sp_chance()
+    print(f"Saving {mtg.name} - {mtg.race_date}")
+    mtg.writemtg()
+
 import rp
-mtg = rp.unpickle_mtg("./test_meetings/2020-11-12-chelmsford.pickle")
+my_mtgs = rp.read_mtgs_from_directory("mtg")
+for mtg in my_mtgs:
+    mtg.write_mtg_to_db("./test_db/test_db.sqlite")
+
+
+import rp
+my_mtgs = rp.read_mtgs_from_directory("mtg")
+for mtg in my_mtgs:
+    for race in mtg.races:
+#        race.set_starters()
+#        race.set_nr_flag()
+        race.set_rp_forecast_chance()
+        race.set_sp_chance()
+        race.set_rp_ppvalue()
+        race.set_sp_ppvalue()
+    mtg.write_summary_to_csv()
+    mtg.writemtg()
+
+import rp
+mtg = rp.unpickle_mtg("meetings/2020-11-03-exeter.pickle")
 for race in mtg.races:
+#    race.set_starters()
+#    race.set_nr_flag()
     race.set_rp_forecast_chance()
     race.set_sp_chance()
     race.set_rp_ppvalue()
     race.set_sp_ppvalue()
 mtg.write_summary_to_csv()
+mtg.writemtg()

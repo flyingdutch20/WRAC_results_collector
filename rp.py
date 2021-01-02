@@ -185,9 +185,9 @@ class Meeting:
             writer.writerow([f"Meeting: {self.name} date: {self.race_date}"])
             for race in self.races:
                 writer.writerow([f"Race leg {race.leg} - {race.race_time} - {race.name}"])
-                writer.writerow(["Name", "Result", "PP pool", "PP pool perc", "Perc", "RP Forecast", "RP Win chance", "RP Place chance", "RP PP value", "SP", "SP Win chance", "SP Place chance", "SP PP value"])
+                writer.writerow(["Name", "Result", "PP placed", "Placed", "PP pool", "PP pool perc", "Perc", "RP Forecast", "RP Win chance", "RP Place chance", "RP PP value", "SP", "SP Win chance", "SP Place chance", "SP PP value"])
                 for nag in race.nags.values():
-                    writer.writerow([nag.name, nag.result, nag.pp_pool, nag.pp_pool_perc, nag.pp_pool_perc_calc,
+                    writer.writerow([nag.name, nag.result, nag.pp_placed, nag.placed, nag.pp_pool, nag.pp_pool_perc, nag.pp_pool_perc_calc,
                                      f"({nag.rp_forecast})", nag.rp_forecast_win_chance, nag.rp_forecast_place_chance, nag.rp_pp_value,
                                      f"({nag.sp})", nag.sp_win_chance, nag.sp_place_chance, nag.sp_pp_value])
 
@@ -239,7 +239,6 @@ class Meeting:
             race.collect_rpresult()
 
     def set_ppvalue(self):
-        # collect the results from rp if they are there
         for race in self.races:
             race.set_rp_ppvalue()
             race.set_sp_ppvalue()
@@ -263,6 +262,9 @@ class Racecard:
         self.nags = {}
         self.totepp_url = ""
         self.leg = 0
+        self.starters = 0
+        self.rp_forecast_places = 0
+        self.sp_places = 0
 
     def serialise_card(self):
         card = copy.copy(self)
@@ -280,7 +282,7 @@ class Racecard:
 
     def insert_sql(self, db_mtg_key):
         strings = ["name", "race_time", "race_class", "distance", "field", "verdict"]
-        numbers = ["pp_pool", "pp_fav", "pp_fav_perc", "pp_nr", "leg"]
+        numbers = ["pp_pool", "pp_fav", "pp_fav_perc", "pp_nr", "leg", "starters"]
         strg_vals = get_values_for_strings(self, strings)
         nmbr_vals = get_values_for_numbers(self, numbers)
         values = ', '.join([strg_vals, nmbr_vals, f"{db_mtg_key}"])
@@ -382,6 +384,7 @@ class Racecard:
         runners_bs = BeautifulSoup(resultspage, "html.parser")
 #        raw_nags = runners_bs.findAll("tr", {"class": "rp-horse_Table__mainRow"})
         raw_nags = runners_bs.findAll("tr")
+        self.starters = 0
         for raw_nag in raw_nags:
             nagname = find_or_empty(raw_nag, "a", "rp-horseTable__horse__name")
             nagresult = find_or_empty(raw_nag, "span", "rp-horseTable__pos__number")
@@ -390,7 +393,41 @@ class Racecard:
             if nag:
                 nag.sp = nag_sp
                 nag.result = nagresult
+                self.starters += 1
+        self.set_nr_flag()
         self.set_sp_chance()
+
+    def set_nr_flag(self):
+        non_runners = filter(lambda nag : not elm.sp, self.nags.values())
+        for nag in non_runners:
+            nag.nr = True
+
+    def set_starters(self):
+        self.starters = len(filter(lambda elm : elm.sp, self.nags.values()))
+
+    def set_places_for(self, field_size):
+        if field_size < 5:
+            return 1
+        elif field_size < 8:
+            return 2
+        elif field_size < 16:
+            return 3
+        elif self.is_handicap():
+            return 4
+        else:
+            return 3
+
+    def is_handicap(self):
+        return "handicap" in self.name.lower()
+
+    def set_rp_forecast_places(self):
+        self.rp_forecast_places = self.set_places_for(len(self.nags))
+
+    def set_sp_places(self):
+        if not self.starters:
+            self.set_starters()
+        self.sp_places = self.set_places_for(self.starters)
+
 
     def set_rp_forecast_chance(self):
         rp_forecast_odds = [nag.rp_forecast for nag in self.nags.values()]
@@ -570,31 +607,4 @@ def extract_rp_meeting(raw_mtg, sel_mtg):
 
 
 # my_mtg = unpickle_mtg("mtg\\2020-10-17-ascot.picle")
-
-"""
-my_mtgs = read_mtgs_from_directory("mtg")
-for mtg in my_mtgs:
-    for race in mtg.races:
-        my_nags = race.nags
-        if isinstance(race.nags, list):
-            my_dict = {}
-            my_dict = {nag.name: nag for nag in my_nags}
-            race.nags = my_dict
-        for nag in race.nags.values():
-            if nag.placed:
-                nag.pp_placed = True
-            else:
-                nag.pp_placed = False
-        race.set_rp_forecast_chance()
-        race.set_sp_chance()
-    print(f"Saving {mtg.name} - {mtg.race_date}")
-    mtg.writemtg()
-
-"""
-"""
-import rp
-my_mtgs = rp.read_mtgs_from_directory("mtg")
-for mtg my_mtgs:
-    mtg.write_mtg_to_db("./test_db/test_db.sqlite")
-"""
 
