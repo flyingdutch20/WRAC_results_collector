@@ -15,20 +15,21 @@ def remove_nr(in_dict):
             my_dict[nag] = in_dict[nag]
     return my_dict
 
-def calc_pp_value(in_dict):
+def calc_pp_value(in_dict, places):
     my_pool_size = set_pool_size(in_dict)
     if my_pool_size == 0:
         return {}
     my_dict = remove_nr(in_dict)
-    field_size = len(my_dict)
-    if field_size <= 4:
+    if places == 1:
         return calc_pp_value_1(my_dict)
-    elif field_size <= 7:
+    elif places == 2:
         return calc_pp_value_2(my_dict)
-    elif field_size <= 16:
+    elif places == 3:
         return calc_pp_value_3(my_dict)
+    elif places == 4:
+        return calc_pp_value_4(my_dict)
     else:
-        return calc_pp_value_3(my_dict)
+        return {}
 
 def calc_pp_value_1(my_dict):
     result = {}
@@ -64,7 +65,7 @@ def calc_pp_value_2(my_dict):
                 except:
                     pp_pool_value = 0
                 pp_pool_value_1 += pp_pool_value
-        result[nag_1] = [pp_pool_perc_1, pp_pool_value_1]
+        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 * (1/2))]
     return result
 
 def calc_pp_value_3(my_dict):
@@ -95,7 +96,7 @@ def calc_pp_value_3(my_dict):
                 except:
                     pp_pool_value = 0
                 pp_pool_value_1 += pp_pool_value
-        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 / 2)]
+        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 * (1/3))]
     return result
 
 def calc_pp_value_4(my_dict):
@@ -154,5 +155,5 @@ def calc_pp_value_4(my_dict):
                     except:
                         pp_pool_value = 0
                     pp_pool_value_1 += pp_pool_value
-        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 / 3)]
+        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 * (1/4))]
     return result

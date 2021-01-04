@@ -56,8 +56,18 @@ for mtg in my_mtgs:
 import rp
 mtg = rp.unpickle_mtg("meetings/2020-11-03-exeter.pickle")
 for race in mtg.races:
-#    race.set_starters()
-#    race.set_nr_flag()
+    race.set_starters_and_nr_flag()
+    race.set_rp_forecast_chance()
+    race.set_sp_chance()
+    race.set_rp_ppvalue()
+    race.set_sp_ppvalue()
+mtg.write_summary_to_csv()
+mtg.writemtg()
+
+import rp
+mtg = rp.unpickle_mtg("meetings/2020-10-30-newcastle.pickle")
+for race in mtg.races:
+    race.set_starters_and_nr_flag()
     race.set_rp_forecast_chance()
     race.set_sp_chance()
     race.set_rp_ppvalue()

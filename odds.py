@@ -13,8 +13,9 @@ from fractions import Fraction
 
 
 
-def get_place_chances_for(list_of_odds):
+def get_place_chances_for(list_of_odds, places):
     my_race = race(list_of_odds)
+    my_race.places = places
     result = my_race.place_chance_dict.copy()
     my_race = None
     return result
@@ -61,21 +62,8 @@ class race:
             if odds:
                 my_nag = nag(odds)
                 self.nags.append(my_nag)
-        self.set_places()
         self.normalise_odds()
         self.calculate_place_chance()
-
-    def set_places(self):
-        num = len(self.nags)
-        if num < 5:
-            self.places = 1
-        elif num < 8:
-            self.places = 2
-        elif num < 16:
-            self.places = 3
-        else:
-            self.places = 4
-        # note officially if > 15 and not handicap or nursery then places is 3 but not sure how often that happens
 
     def normalise_odds(self):
         sum_odds = sum([nag.float_odds for nag in self.nags])

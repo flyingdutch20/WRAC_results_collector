@@ -184,10 +184,10 @@ class Meeting:
             writer = csv.writer(f)
             writer.writerow([f"Meeting: {self.name} date: {self.race_date}"])
             for race in self.races:
-                writer.writerow([f"Race leg {race.leg} - {race.race_time} - {race.name}"])
-                writer.writerow(["Name", "Result", "PP placed", "Placed", "PP pool", "PP pool perc", "Perc", "RP Forecast", "RP Win chance", "RP Place chance", "RP PP value", "SP", "SP Win chance", "SP Place chance", "SP PP value"])
+                writer.writerow([f"Race leg {race.leg} - {race.race_time} - {race.name} - Starters: {race.starters}"])
+                writer.writerow(["Name", "N/R", "Result", "PP placed", "Placed", "PP pool", "PP pool perc", "Perc", "RP Forecast", "RP Win chance", "RP Place chance", "RP PP value", "SP", "SP Win chance", "SP Place chance", "SP PP value"])
                 for nag in race.nags.values():
-                    writer.writerow([nag.name, nag.result, nag.pp_placed, nag.placed, nag.pp_pool, nag.pp_pool_perc, nag.pp_pool_perc_calc,
+                    writer.writerow([nag.name, nag.nr, nag.result, nag.pp_placed, nag.placed, nag.pp_pool, nag.pp_pool_perc, nag.pp_pool_perc_calc,
                                      f"({nag.rp_forecast})", nag.rp_forecast_win_chance, nag.rp_forecast_place_chance, nag.rp_pp_value,
                                      f"({nag.sp})", nag.sp_win_chance, nag.sp_place_chance, nag.sp_pp_value])
 
@@ -394,16 +394,18 @@ class Racecard:
                 nag.sp = nag_sp
                 nag.result = nagresult
                 self.starters += 1
-        self.set_nr_flag()
+        self.set_starters_and_nr_flag()
         self.set_sp_chance()
 
-    def set_nr_flag(self):
-        non_runners = filter(lambda nag : not elm.sp, self.nags.values())
-        for nag in non_runners:
-            nag.nr = True
-
-    def set_starters(self):
-        self.starters = len(filter(lambda elm : elm.sp, self.nags.values()))
+    def set_starters_and_nr_flag(self):
+        non_runners = 0
+        for nag in self.nags.values():
+            if not nag.sp:
+                nag.nr = True
+                non_runners += 1
+            else:
+                nag.nr = False
+        self.starters = len(self.nags) - non_runners
 
     def set_places_for(self, field_size):
         if field_size < 5:
@@ -414,24 +416,31 @@ class Racecard:
             return 3
         elif self.is_handicap():
             return 4
+        elif self.is_nursery():
+            return 4
         else:
             return 3
 
     def is_handicap(self):
         return "handicap" in self.name.lower()
 
+    def is_nursery(self):
+        return "nursery" in self.name.lower()
+
     def set_rp_forecast_places(self):
         self.rp_forecast_places = self.set_places_for(len(self.nags))
 
     def set_sp_places(self):
         if not self.starters:
-            self.set_starters()
+            self.set_starters_and_nr_flag()
         self.sp_places = self.set_places_for(self.starters)
 
 
     def set_rp_forecast_chance(self):
         rp_forecast_odds = [nag.rp_forecast for nag in self.nags.values()]
-        chance_dict = odds.get_place_chances_for(rp_forecast_odds)
+        if not getattr(self, "rp_forecast_places", False):
+            self.set_rp_forecast_places()
+        chance_dict = odds.get_place_chances_for(rp_forecast_odds, self.rp_forecast_places)
         for nag in self.nags.values():
             chance = chance_dict.get(nag.rp_forecast, [0, 0])
             nag.rp_forecast_win_chance = chance[0]
@@ -439,15 +448,14 @@ class Racecard:
 
     def set_sp_chance(self):
         sp_odds = [nag.sp for nag in self.nags.values()]
-        chance_dict = odds.get_place_chances_for(sp_odds)
+        if not getattr(self, "sp_places", False):
+            self.set_sp_places()
+        chance_dict = odds.get_place_chances_for(sp_odds, self.sp_places)
         for nag in self.nags.values():
             chance = chance_dict.get(nag.sp, [0, 0])
             nag.sp_win_chance = chance[0]
             nag.sp_place_chance = chance[1]
-            nag.set_placed(len(self.nags))
-        #TODO should use the number of starters - exclude the N/R
-        #TODO set the starters on the race retrospectively
-        #TODO have N/R flag on runners
+            nag.set_placed(self.sp_places)
 
     def set_rp_ppvalue(self):
         rp_val = {}
@@ -458,7 +466,7 @@ class Racecard:
                 pool = 0
             if nag.rp_forecast_win_chance > 0:
                 rp_val[nag.name] = [pool, nag.rp_forecast_win_chance, nag.rp_forecast_place_chance, nag.sp_win_chance]
-        rp_val_dict = pp_value.calc_pp_value(rp_val)
+        rp_val_dict = pp_value.calc_pp_value(rp_val, self.rp_forecast_places)
         for nag in self.nags.values():
             try:
                 nag.pp_pool_perc_calc = rp_val_dict[nag.name][0]
@@ -476,7 +484,7 @@ class Racecard:
                 pool = 0
             if nag.sp_win_chance > 0:
                 sp_val[nag.name] = [pool, nag.sp_win_chance, nag.sp_place_chance, nag.sp_win_chance]
-        sp_val_dict = pp_value.calc_pp_value(sp_val)
+        sp_val_dict = pp_value.calc_pp_value(sp_val, self.sp_places)
         for nag in self.nags.values():
             try:
                 nag.pp_pool_perc_calc = sp_val_dict[nag.name][0]
@@ -553,19 +561,11 @@ class Nag:
         self.rpr = find_or_empty(raw_nag, "span", "RC-runnerRpr")
         self.rp_comment = find_or_empty(raw_nag, "div", "RC-comments__content")
 
-    def set_placed(self, runners):
+    def set_placed(self, places):
         try:
             place = int(self.result.split()[0])
         except:
             place = 99
-        if runners < 5:
-            places = 1
-        elif runners < 8:
-            places = 2
-        elif runners < 16:
-            places = 3
-        else:
-            places = 4
         self.placed = (place <= places)
 
 
