@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 #   from selenium.webdriver.support import expected_conditions as EC
 #   from selenium.webdriver.support.select import Select
 import re
+from sys import platform
 
 
 class PPNag:
@@ -38,7 +39,10 @@ def hammer_it(driver, url):
 
 def getpage_for_races(my_dict):
     pp_list = []
-    driver = webdriver.Chrome(executable_path="./drivers/chromedriver.exe")
+    if platform == 'linux' or platform == 'linux2':
+        driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver")
+    else:
+        driver = webdriver.Chrome(executable_path="./drivers/chromedriver.exe")
 #    driver = webdriver.Remote(desired_capabilities={"browserName": "chrome"})
     driver.get("https://tote.co.uk/results")
     WebDriverWait(driver, timeout=20, poll_frequency=1).\
