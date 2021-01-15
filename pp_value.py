@@ -59,13 +59,14 @@ def calc_pp_value_2(my_dict):
                 place_chance_2 = my_dict[nag_2][2]
                 chance_1_2 = win_chance_1 * (win_chance_2 / (1 - win_chance_1))
                 chance_2_1 = win_chance_2 * (win_chance_1 / (1 - win_chance_2))
+                chance = chance_1_2 + chance_2_1
+                pool_perc = pp_pool_perc_1 + pp_pool_perc_2
                 try:
-                    pp_pool_value = (1 / (pp_pool_perc_1 + pp_pool_perc_2)) * \
-                                    (chance_1_2 + chance_2_1)
+                    pp_pool_value = chance / pool_perc
                 except:
                     pp_pool_value = 0
                 pp_pool_value_1 += pp_pool_value
-        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 * (1/2))]
+        result[nag_1] = [pp_pool_perc_1, pp_pool_value_1]
     return result
 
 def calc_pp_value_3(my_dict):
@@ -90,13 +91,14 @@ def calc_pp_value_3(my_dict):
                 chance_2_3_1 = win_chance_2 * (win_chance_3 / (1 - win_chance_2)) * (win_chance_1 / (1 - win_chance_2 - win_chance_3))
                 chance_3_1_2 = win_chance_3 * (win_chance_1 / (1 - win_chance_3)) * (win_chance_2 / (1 - win_chance_3 - win_chance_1))
                 chance_3_2_1 = win_chance_3 * (win_chance_2 / (1 - win_chance_3)) * (win_chance_1 / (1 - win_chance_3 - win_chance_2))
+                chance = chance_1_2_3 + chance_1_3_2 + chance_2_1_3 + chance_2_3_1 + chance_3_1_2 + chance_3_2_1
+                pool_perc = pp_pool_perc_1 + pp_pool_perc_2 + pp_pool_perc_3
                 try:
-                    pp_pool_value = (1 / (pp_pool_perc_1 + pp_pool_perc_2 + pp_pool_perc_3)) * \
-                                    (chance_1_2_3 + chance_1_3_2 + chance_2_1_3 + chance_2_3_1 + chance_3_1_2 + chance_3_2_1)
+                    pp_pool_value = chance / pool_perc
                 except:
                     pp_pool_value = 0
                 pp_pool_value_1 += pp_pool_value
-        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 * (1/3))]
+        result[nag_1] = [pp_pool_perc_1, pp_pool_value_1]
     return result
 
 def calc_pp_value_4(my_dict):
@@ -151,9 +153,9 @@ def calc_pp_value_4(my_dict):
                     tot_chance_4 = chance_4_2_3_1 + chance_4_2_1_3 + chance_4_3_2_1 + chance_4_3_1_2 + chance_4_1_2_3 + chance_4_1_3_2
                     sum_tot_chance = tot_chance_1 + tot_chance_2 + tot_chance_3 + tot_chance_4
                     try:
-                        pp_pool_value = 1 / tot_pp_pool_perc * sum_tot_chance
+                        pp_pool_value = sum_tot_chance / tot_pp_pool_perc
                     except:
                         pp_pool_value = 0
                     pp_pool_value_1 += pp_pool_value
-        result[nag_1] = [pp_pool_perc_1, (pp_pool_value_1 * (1/4))]
+        result[nag_1] = [pp_pool_perc_1, pp_pool_value_1]
     return result
