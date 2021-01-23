@@ -14,8 +14,7 @@ from fractions import Fraction
 
 
 def get_place_chances_for(list_of_odds, places):
-    my_race = race(list_of_odds)
-    my_race.places = places
+    my_race = race(list_of_odds, places)
     result = my_race.place_chance_dict.copy()
     my_race = None
     return result
@@ -54,10 +53,11 @@ class race:
     nags = []
     normalised_odds = []
     place_chance_dict = {}
-    def __init__(self, odds_list):
+    def __init__(self, odds_list, places):
         self.nags = []
         self.normalised_odds = []
         self.place_chance_dict = {}
+        self.places = places
         for odds in odds_list:
             if odds:
                 my_nag = nag(odds)
