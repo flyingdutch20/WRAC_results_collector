@@ -52,7 +52,7 @@ def getpage_for_races(my_dict):
         result = None
         while result is None and repeat < 6:
             result = hammer_it(driver, url)
-            print(f"Attempt {repeat} to get pp for leg {leg}")
+            logger.debug(f"Attempt {repeat} to get pp for leg {leg}")
             repeat += 1
         if result is not None:
             race = extract_pprace(result, leg, driver)
@@ -63,7 +63,7 @@ def getpage_for_races(my_dict):
 def extract_pprace(result, leg, driver):
     race = PPRace()
     race.leg = leg
-    print(f"Getting pp data for leg {leg}")
+    logger.info(f"Getting pp data for leg {leg}")
     poolsize = result.find_element_by_class_name("value")
     race.pool = poolsize.text if poolsize is not None else ""
     legdetails = WebDriverWait(driver, timeout=30, poll_frequency=5). \

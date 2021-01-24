@@ -13,13 +13,26 @@ import re
 import pp_value
 import csv
 
+if not os.path.isdir("./logs"):
+    os.mkdir("./logs")
+logname = "./logs/" + date.today().strftime('%Y-%m-%d') + "-pp.log"
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S',
+                    filename=logname,
+                    filemode='w')
+# define a Handler which writes INFO messages or higher to the sys.stderr
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+# set a format which is simpler for console use
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# tell the handler to use this format
+console.setFormatter(formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
 
 logger = logging.getLogger("Placepot")
-"""logger.basicConfig(filename='sql_testing.log', filemode='w',
-                    level=logging.DEBUG,
-                    format='%(asctime)s - %(level)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
-"""
 logger.debug('This message should go to the log file')
 logger.info('So should this')
 logger.warning('And this, too')
@@ -38,16 +51,16 @@ for line in infile.read().split("\n"):
 def read_racingpost_index(sel_mtg, collect_pp, results):
     bs = BeautifulSoup(getpage("https://www.racingpost.com/racecards/", "rpindex"), "html.parser")
     raw_meetings = bs.findAll("section", {"class": "ui-accordion__row"})
+    no_of_mtgs = 0
     for raw_mtg in raw_meetings:
         mtg = extract_rp_meeting(raw_mtg, sel_mtg)
-        no_of_mtgs = 0
         if mtg is not None:
             no_of_mtgs += 1
             mtg.collect_results(collect_pp, results)
             mtg.set_ppvalue()
             logger.info(f"Saving {mtg.name}")
             mtg.writemtg()
-        print(f"Saved {no_of_mtgs} meetings.")
+    logger.info(f"Saved {no_of_mtgs} meetings.")
 
 def read_mtgs_from_directory(dir):
     result = []
@@ -97,7 +110,7 @@ def get_value_for_string(obj, strg):
 
 def get_values_for_strings(obj, strgs):
     my_str = ', '.join([get_value_for_string(obj, val) for val in strgs])
-    logger.debug(f'get_values_for_strings: {my_str}')
+#    logger.debug(f'get_values_for_strings: {my_str}')
     return my_str
 
 def get_value_for_number(obj, strg):
@@ -110,7 +123,7 @@ def get_value_for_number(obj, strg):
 
 def get_values_for_numbers(obj, nmbrs):
     my_str = ', '.join([get_value_for_number(obj, val) for val in nmbrs])
-    logger.debug(f'get_values_for_numbers: {my_str}')
+#    logger.debug(f'get_values_for_numbers: {my_str}')
     return my_str
 
 def get_value_for_bool(obj, strg):
@@ -120,7 +133,7 @@ def get_value_for_bool(obj, strg):
 
 def get_values_for_bools(obj, bools):
     my_str = ', '.join([get_value_for_bool(obj, val) for val in bools])
-    logger.debug(f'get_values_for_bools: {my_str}')
+#    logger.debug(f'get_values_for_bools: {my_str}')
     return my_str
 
 pp_strip = re.compile("[-A-Za-z£,%() ]")
