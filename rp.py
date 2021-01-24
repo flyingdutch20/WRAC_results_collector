@@ -12,10 +12,21 @@ import logging
 import re
 import pp_value
 import csv
+import yaml
 
-if not os.path.isdir("./logs"):
-    os.mkdir("./logs")
-logname = "./logs/" + date.today().strftime('%Y-%m-%d') + "-pp.log"
+yaml_file = 'placepot_config.yml'
+try:
+    with open(yaml_file, 'r') as c_file:
+      config = yaml.safe_load(c_file)
+except Exception as e:
+    print('Error reading the config file')
+logs_dir = config['directories']['logs_dir']
+meetings_dir = config['directories']['meetings_dir']
+rp_base_url = config['urls']['rp_base_url']
+
+if not os.path.isdir("./" + logs_dir):
+    os.mkdir("./" + logs_dir)
+logname = "./" + logs_dir + "/" + date.today().strftime('%Y-%m-%d') + "-pp.log"
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -38,6 +49,7 @@ logger.info('Info message to the console and the log file')
 logger.warning('Warning message to the console and log file')
 logger.error('Error message should go everywhere')
 
+
 infile = open('courselist_tote.txt')
 courselist_dict = {}
 for line in infile.read().split("\n"):
@@ -49,7 +61,7 @@ for line in infile.read().split("\n"):
 
 
 def read_racingpost_index(sel_mtg, collect_pp, results):
-    bs = BeautifulSoup(getpage("https://www.racingpost.com/racecards/", "rpindex"), "html.parser")
+    bs = BeautifulSoup(getpage(rp_base_url, "rpindex"), "html.parser")
     raw_meetings = bs.findAll("section", {"class": "ui-accordion__row"})
     no_of_mtgs = 0
     for raw_mtg in raw_meetings:
@@ -177,10 +189,10 @@ class Meeting:
         return mtg.__dict__
 
     def writemtg(self):
-        if not os.path.isdir("./meetings"):
-            os.mkdir("./meetings")
+        if not os.path.isdir("./" + meetings_dir):
+            os.mkdir("./" + meetings_dir)
         mtgkey = self.race_date + "-" + self.name
-        pathname = "meetings/" + mtgkey
+        pathname = meetings_dir + "/" + mtgkey
         with open(pathname + ".pickle", "wb") as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
         ser = self.serialise_mtg()
@@ -189,10 +201,10 @@ class Meeting:
             json.dump(my_dict, output)
 
     def write_summary_to_csv(self):
-        if not os.path.isdir("./meetings"):
-            os.mkdir("./meetings")
+        if not os.path.isdir("./" + meetings_dir):
+            os.mkdir("./" + meetings_dir)
         mtgkey = self.race_date + "-" + self.name
-        pathname = "meetings/" + mtgkey
+        pathname = meetings_dir + "/" + mtgkey
         with open(pathname + ".csv", "w", newline='') as f:
             writer = csv.writer(f)
             writer.writerow([f"Meeting: {self.name} date: {self.race_date}"])
