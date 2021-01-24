@@ -32,11 +32,11 @@ console.setFormatter(formatter)
 # add the handler to the root logger
 logging.getLogger('').addHandler(console)
 
-logger = logging.getLogger("Placepot")
-logger.debug('This message should go to the log file')
-logger.info('So should this')
-logger.warning('And this, too')
-logger.error('And non-ASCII stuff, too, like Øresund and Malmö')
+logger = logging.getLogger("Placepot.main")
+logger.debug('Debug message should go to the log file')
+logger.info('Info message to the console and the log file')
+logger.warning('Warning message to the console and log file')
+logger.error('Error message should go everywhere')
 
 infile = open('courselist_tote.txt')
 courselist_dict = {}
@@ -89,7 +89,7 @@ def unpickle_mtg(filename):
 def getpage(url, name):
     r = requests.get(url)
     if r.status_code > 299:
-        logger.info(f"No results available for {name}")
+        logger.warning(f"No results available for {name}")
         return ""
     html = r.text
     return html

@@ -6,6 +6,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 #   from selenium.webdriver.support.select import Select
 import re
 from sys import platform
+import logging
+
+
+logger = logging.getLogger("Placepot.tote")
 
 
 class PPNag:
