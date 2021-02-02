@@ -15,21 +15,40 @@ def remove_nr(in_dict):
             my_dict[nag] = in_dict[nag]
     return my_dict
 
+def balance_pp_values(my_dict):
+    if len(my_dict) == 0:
+        return my_dict
+    total = 0
+    new_dict = {}
+    # sum the total of the pp values
+    for val in my_dict.values():
+        total += val[1]
+    average = total / len(my_dict)
+    for nag in my_dict.keys():
+        #work out value / average and put back
+        pp_val = my_dict[nag][1] / average
+        pp_perc = my_dict[nag][0]
+        new_dict[nag] = (pp_perc, pp_val)
+    return new_dict
+
 def calc_pp_value(in_dict, places):
     my_pool_size = set_pool_size(in_dict)
+    result = {}
     if my_pool_size == 0:
         return {}
     my_dict = remove_nr(in_dict)
     if places == 1:
-        return calc_pp_value_1(my_dict)
+        result = calc_pp_value_1(my_dict)
     elif places == 2:
-        return calc_pp_value_2(my_dict)
+        result = calc_pp_value_2(my_dict)
     elif places == 3:
-        return calc_pp_value_3(my_dict)
+        result = calc_pp_value_3(my_dict)
     elif places == 4:
-        return calc_pp_value_4(my_dict)
+        result = calc_pp_value_4(my_dict)
     else:
-        return {}
+        result = {}
+    result = balance_pp_values(result)
+    return result
 
 def calc_pp_value_1(my_dict):
     result = {}

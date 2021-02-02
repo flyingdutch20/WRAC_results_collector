@@ -47,8 +47,7 @@ import rp
 my_mtgs = rp.read_mtgs_from_directory("mtg")
 for mtg in my_mtgs:
     for race in mtg.races:
-#        race.set_starters()
-#        race.set_nr_flag()
+        race.set_starters_and_nr_flag()
         race.set_rp_forecast_chance()
         race.set_sp_chance()
         race.set_rp_ppvalue()
@@ -79,7 +78,19 @@ mtg.write_summary_to_csv()
 mtg.writemtg()
 
 import rp
-mtg = rp.unpickle_mtg("meetings/2020-11-28-newbury.pickle")
+mtg = rp.unpickle_mtg("meetings/2020-10-17-market.pickle")
+for race in mtg.races:
+    race.set_starters_and_nr_flag()
+    race.set_rp_forecast_chance()
+    race.set_sp_chance()
+    race.set_rp_ppvalue()
+    race.set_sp_ppvalue()
+mtg.write_summary_to_csv()
+mtg.writemtg()
+
+# 4-place example
+import rp
+mtg = rp.unpickle_mtg("meetings/2020-11-26-taunton.pickle")
 for race in mtg.races:
     race.set_starters_and_nr_flag()
     race.set_rp_forecast_chance()
