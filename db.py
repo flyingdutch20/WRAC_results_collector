@@ -3,7 +3,7 @@ import sqlite3
 import logging
 
 
-logger = logging.getLogger("Placepot")
+logger = logging.getLogger("Placepot.db")
 
 def create_connection(path):
     connection = None

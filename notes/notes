@@ -18,7 +18,8 @@ nag pp_pool_perc: "(1%)"
 nag pp_pool_perc: ""
 nag pp_pool_perc: 0
 
-"""
+
+"rewrite nags in race in mtg"
 my_mtgs = read_mtgs_from_directory("mtg")
 for mtg in my_mtgs:
     for race in mtg.races:
@@ -37,12 +38,13 @@ for mtg in my_mtgs:
     print(f"Saving {mtg.name} - {mtg.race_date}")
     mtg.writemtg()
 
+"write all meetings in mtg to database"
 import rp
 my_mtgs = rp.read_mtgs_from_directory("mtg")
 for mtg in my_mtgs:
     mtg.write_mtg_to_db("./test_db/test_db.sqlite")
 
-
+"recalculate value for all mtgs in dir mtg and write them into dir meeting"
 import rp
 my_mtgs = rp.read_mtgs_from_directory("mtg")
 for mtg in my_mtgs:
