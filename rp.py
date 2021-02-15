@@ -559,10 +559,10 @@ class Nag:
 
     def insert_sql(self, db_race_key):
         strings = ["name", "no", "draw", "lastrun", "form", "age", "jockey", "trainer", "ts", "rpr",
-                   "rp_comment", "rp_forecast", "result", "sp", "fav", "race_comment"]
-        bools = ["pp_placed", "placed"]
-        numbers = ["pp_pool", "pp_pool_perc", "rp_forecast_win_chance", "rp_forecast_place_chance",
-                   "sp_win_chance", "sp_place_chance"]
+                   "rp_comment", "rp_forecast", "result", "sp", "fav", "race_comment", "pp_pool_perc"]
+        bools = ["pp_placed", "placed", "nr"]
+        numbers = ["pp_pool", "pp_pool_perc_calc", "rp_forecast_win_chance", "rp_forecast_place_chance",
+                   "rp_pp_value", "sp_win_chance", "sp_place_chance", "sp_pp_value"]
         strg_vals = get_values_for_strings(self, strings)
         bool_vals = get_values_for_bools(self, bools)
         nmbr_vals = get_values_for_numbers(self, numbers)
