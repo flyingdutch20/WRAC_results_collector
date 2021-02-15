@@ -1,5 +1,5 @@
-# calculate pp value for a dict nag -> [pp pool, place chance]
-# return a dictionary nag -> value
+# calculate pp value for a dict nag -> [pp pool, win chance, place chance]
+# return a dictionary nag -> [pool percentage, pp value]
 
 def set_pool_size(in_dict):
     global pool_size
@@ -14,22 +14,6 @@ def remove_nr(in_dict):
         if in_dict[nag][3] > 0:
             my_dict[nag] = in_dict[nag]
     return my_dict
-
-def balance_pp_values(my_dict):
-    if len(my_dict) == 0:
-        return my_dict
-    total = 0
-    new_dict = {}
-    # sum the total of the pp values
-    for val in my_dict.values():
-        total += val[1]
-    average = total / len(my_dict)
-    for nag in my_dict.keys():
-        #work out value / average and put back
-        pp_val = my_dict[nag][1] / average
-        pp_perc = my_dict[nag][0]
-        new_dict[nag] = (pp_perc, pp_val)
-    return new_dict
 
 def calc_pp_value(in_dict, places):
     my_pool_size = set_pool_size(in_dict)
@@ -47,7 +31,6 @@ def calc_pp_value(in_dict, places):
         result = calc_pp_value_4(my_dict)
     else:
         result = {}
-    result = balance_pp_values(result)
     return result
 
 def calc_pp_value_1(my_dict):
@@ -117,6 +100,7 @@ def calc_pp_value_3(my_dict):
                 except:
                     pp_pool_value = 0
                 pp_pool_value_1 += pp_pool_value
+        pp_pool_value_1 = pp_pool_value_1 / 2
         result[nag_1] = [pp_pool_perc_1, pp_pool_value_1]
     return result
 
@@ -170,11 +154,12 @@ def calc_pp_value_4(my_dict):
                     tot_chance_2 = chance_2_1_3_4 + chance_2_1_4_3 + chance_2_3_1_4 + chance_2_3_4_1 + chance_2_4_1_3 + chance_2_4_3_1
                     tot_chance_3 = chance_3_2_1_4 + chance_3_2_4_1 + chance_3_1_2_4 + chance_3_1_4_2 + chance_3_4_2_1 + chance_3_4_1_2
                     tot_chance_4 = chance_4_2_3_1 + chance_4_2_1_3 + chance_4_3_2_1 + chance_4_3_1_2 + chance_4_1_2_3 + chance_4_1_3_2
-                    sum_tot_chance = tot_chance_1 + tot_chance_2 + tot_chance_3 + tot_chance_4
+                    chance = tot_chance_1 + tot_chance_2 + tot_chance_3 + tot_chance_4
                     try:
-                        pp_pool_value = sum_tot_chance / tot_pp_pool_perc
+                        pp_pool_value = chance / tot_pp_pool_perc
                     except:
                         pp_pool_value = 0
                     pp_pool_value_1 += pp_pool_value
+        pp_pool_value_1 = pp_pool_value_1 / 6
         result[nag_1] = [pp_pool_perc_1, pp_pool_value_1]
     return result

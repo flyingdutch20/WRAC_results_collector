@@ -101,3 +101,15 @@ for race in mtg.races:
     race.set_sp_ppvalue()
 mtg.write_summary_to_csv()
 mtg.writemtg()
+
+# n/r from 3 places to 2 places example
+import rp
+mtg = rp.unpickle_mtg("meetings/2021-02-07-musselburgh.pickle")
+for race in mtg.races:
+    race.set_starters_and_nr_flag()
+    race.set_rp_forecast_chance()
+    race.set_sp_chance()
+    race.set_rp_ppvalue()
+    race.set_sp_ppvalue()
+mtg.write_summary_to_csv()
+mtg.writemtg()
