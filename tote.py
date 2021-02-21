@@ -51,6 +51,13 @@ def getpage_for_races(my_dict):
     driver.get("https://tote.co.uk/results")
     WebDriverWait(driver, timeout=20, poll_frequency=1).\
         until(lambda d: d.find_element_by_xpath("//div[@data-testid='results']"))
+    try:
+        buttons = driver.find_elements(By.CSS_SELECTOR, 'button')
+        for button in buttons:
+            if button.text == 'Accept':
+                button.click()
+    except:
+        None
     for url, leg in my_dict.items():
         repeat = 1
         result = None
@@ -79,6 +86,7 @@ def extract_pprace(result, leg, driver):
     except:
         # No leg by leg data
         return None
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     extract_placed_runners(legdetails, race)
     extract_other_runners(legdetails, race)
     return race
