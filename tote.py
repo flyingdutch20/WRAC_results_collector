@@ -70,7 +70,7 @@ def wait_until_list_loaded(legdetails, driver):
     try:
         list_size = len(runners_div.find_elements(By.CSS_SELECTOR, "li"))
         driver.wait.until(list_size > 0)
-    except TimeoutException:
+    except:
         None
 
 
