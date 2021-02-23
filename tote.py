@@ -41,6 +41,39 @@ def hammer_it(driver, url):
     return result
 
 
+"""def scroll_until_loaded(driver):
+    check_height = driver.execute_script("return document.body.scrollHeight;")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        try:
+            current_height = driver.execute_script("return document.body.scrollHeight;")
+            driver.wait.until(current_height > check_height)
+            check_height = driver.execute_script("return document.body.scrollHeight;")
+        except TimeoutException:
+             break
+
+def parse(self, response):
+    self.driver.get(response.url)
+    self.scroll_until_loaded()
+
+    for item in self.driver.find_elements_by_css_selector(".row"):
+        name = item.find_element_by_css_selector(".company-title").text
+        revenue = item.find_element_by_css_selector(".company-revenue").text
+        yield {"Title":name,"Revenue":revenue}
+"""
+
+def wait_until_list_loaded(legdetails, driver):
+    runners_div = legdetails.find_element_by_xpath("div[3]/div[2]")
+    runners_list = runners_div.find_elements(By.CSS_SELECTOR, "li")
+    list_size = len(runners_list)
+#something wrong here
+    try:
+        list_size = len(runners_div.find_elements(By.CSS_SELECTOR, "li"))
+        driver.wait.until(list_size > 0)
+    except TimeoutException:
+        None
+
+
 def getpage_for_races(my_dict):
     pp_list = []
     if platform == 'linux' or platform == 'linux2':
@@ -86,7 +119,13 @@ def extract_pprace(result, leg, driver):
     except:
         # No leg by leg data
         return None
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+#    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    #        scroll_until_loaded(driver)
+    # data
+    button = driver.find_element_by_xpath("//button[@data-testid='spotlight-button']")
+    button.click()
+    button.click()
+#    wait_until_list_loaded(legdetails, driver)
     extract_placed_runners(legdetails, race)
     extract_other_runners(legdetails, race)
     return race
