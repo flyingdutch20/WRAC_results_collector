@@ -2,7 +2,7 @@ import PyInstaller.__main__
 import os.path
 PyInstaller.__main__.run([
     '--name=%s' % "rp_collector",
-    '--distpath=%s' % "dist/rp_collector_v21.1.0",
+    '--distpath=%s' % "dist/rp_collector_v21.2.0",
     '--onefile',
 #    '--add-binary=%s' % './drivers/chromedriver.exe',
 #    '--manifest=%s' % 'wrac_classes.exe.manifest',
