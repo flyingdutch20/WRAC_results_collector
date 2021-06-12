@@ -3,6 +3,5 @@ general:
 
 directories:
   logs_dir: logs
-  meetings_dir: meetings
 urls:
   rp_base_url: https://www.racingpost.com/racecards/

@@ -14,7 +14,7 @@ import pp_value
 import csv
 import yaml
 
-yaml_file = 'placepot_config.yml'
+yaml_file = 'config.yml'
 try:
     with open(yaml_file, 'r') as c_file:
       config = yaml.safe_load(c_file)

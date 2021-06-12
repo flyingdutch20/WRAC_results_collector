@@ -1,30 +1,22 @@
-Tote placepot figures
-get sample pages
-be able to extract the data from the pages
+Create program that goes off to different race results pages and look in those pages for WRAC results
 
-Racing post racecards
-get sample pages
-be able to extract meeting and racecards from pages
+main: start the program with arguments (number of weeks to collect and whether to run in test)
 
-Create meeting and racecards objects from Racing Post
-Map Tote Placepot pages
-Store as JSON
+results: the overall collection
+- knows how to go off to list of py programs that know how to collect and return WRAC runners
+- knows how to create output (excel/html)
+- knows how to email the results
 
-Create routine to automatically scrape pages at the right times
+runner(class): definition of the runner
 
-Racing post racecard index
-https://www.racingpost.com/racecards/
+racebest
+- index page: https://racebest.com/results
+- race result (tri) https://racebest.com/results/ux3zk
+- race result (run) https://racebest.com/results/z9g5w
+
 
 html = urlopen("https://www.racingpost.com/racecards/")
 output = open("racingpost_index.html", "wb")
 output.writelines(html.readlines())
 output.close()
 
-div class=RC-accordion
-data-accordion-name="RC-accordion_byMeeting"
-each meeting
-    <section class="ui-accordion__row">
-    read meeting details - location, start time, number of races, going
-    each race
-        <div class="RC-meetingItem">
-        read race details - race id, date, race time, url, title, RC-courseCards__going, number of runners
