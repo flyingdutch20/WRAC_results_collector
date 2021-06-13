@@ -1,5 +1,5 @@
 import argparse
-import rp
+import result
 
 
 def get_args():
@@ -26,4 +26,4 @@ if __name__ == '__main__':
     args = get_args()
     test = args.test
     weeks = args.weeks
-    rp.read_racingpost_index(test, weeks)
+    result.find_results(test, weeks)

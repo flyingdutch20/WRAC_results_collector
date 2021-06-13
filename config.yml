@@ -4,4 +4,4 @@ general:
 directories:
   logs_dir: logs
 urls:
-  rp_base_url: https://www.racingpost.com/racecards/
+  racebest_base_url: https://racebest.com/results
