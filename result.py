@@ -1,20 +1,20 @@
-from datetime import date
-from datetime import timedelta
+from datetime import date, timedelta
+
 
 class Result:
     def __init__(self):
         self.runner = ''
         self.gender = ''
         self.age = 0
-        self.category = enumerate
-        self.date = date()
+        self.category = ''
+        self.date = date.today()
         self.race = ''
-        self.distance = enumerate
-        self.swimtime = timedelta()
-        self.swimtransition = timedelta()
-        self.biketime = timedelta()
-        self.biketransition = timedelta()
-        self.runtime = timedelta()
+        self.distance = ''       #5k, 5M, 10k, 1/2 marathon, marathon, sprint, olympic
+        self.swimtime = timedelta(seconds=0)
+        self.swimtransition = timedelta(seconds=0)
+        self.biketime = timedelta(seconds=0)
+        self.biketransition = timedelta(seconds=0)
+        self.runtime = timedelta(seconds=0)
         self.comment = ''
 
 

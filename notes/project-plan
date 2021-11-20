@@ -2,12 +2,13 @@ Create program that goes off to different race results pages and look in those p
 
 main: start the program with arguments (number of weeks to collect and whether to run in test)
 
-results: the overall collection
+result_collector: the overall collection
 - knows how to go off to list of py programs that know how to collect and return WRAC runners
-- knows how to create output (excel/html)
 - knows how to email the results
 
-runner(class): definition of the runner
+result(class): definition of the runner
+- knows how to create output (excel/html)
+- knows how to write the result to a database
 
 racebest
 - index page: https://racebest.com/results
