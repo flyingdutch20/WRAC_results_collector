@@ -3,5 +3,6 @@ general:
 
 directories:
   logs_dir: logs
+
 urls:
   racebest_base_url: https://racebest.com/results

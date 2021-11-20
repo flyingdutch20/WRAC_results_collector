@@ -1,5 +1,6 @@
 import argparse
-import result
+
+import result_collector
 
 
 def get_args():
@@ -26,4 +27,4 @@ if __name__ == '__main__':
     args = get_args()
     test = args.test
     weeks = args.weeks
-    result.find_results(test, weeks)
+    result_collector.find_results(test, weeks)

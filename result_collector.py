@@ -3,17 +3,20 @@ import logging
 import yaml
 
 import result
+import racebest
 
-
+### read the config
 yaml_file = 'config.yml'
 try:
     with open(yaml_file, 'r') as c_file:
-      config = yaml.safe_load(c_file)
+        config = yaml.safe_load(c_file)
 except Exception as e:
     print('Error reading the config file')
 logs_dir = config['directories']['logs_dir']
-base_url = config['urls']['racebest_base_url']
+racebest_base_url = config['urls']['racebest_base_url']
 
+
+### setup the logger
 if not os.path.isdir("./" + logs_dir):
     os.mkdir("./" + logs_dir)
 logname = "./" + logs_dir + "/" + date.today().strftime('%Y-%m-%d') + "-results.log"
@@ -39,3 +42,18 @@ logger.info('Info message to the console and the log file')
 logger.warning('Warning message to the console and log file')
 logger.error('Error message should go everywhere')
 
+
+def create_output(results):
+    pass
+
+
+def mail_output(output):
+    pass
+
+
+def find_results(test, weeks):
+    results = []
+    results.extend(racebest.collect_result(racebest_base_url, weeks))
+    output = create_output(results)
+    if not test:
+        mail_output(output)
