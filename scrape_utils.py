@@ -28,3 +28,10 @@ def find_from_date(weeks):
     return from_date
 
 
+def lookup_month_index_from_abbr(month_abbr):
+    try:
+        month_index = 1 + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].index(month_abbr)
+    except Exception:
+        month_index = 1
+    return month_index

@@ -18,3 +18,11 @@ class Result:
         self.comment = ''
 
 
+class Race():
+    def __init__(self):
+        self.date = date.today()
+        self.event = ''
+        self.url = ''
+        self.location = ''
+        self.distance = ''
+        self.type = ''
