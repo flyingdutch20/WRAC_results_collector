@@ -1,6 +1,6 @@
 import requests
 import logging
-
+from datetime import date
 
 logger = logging.getLogger("Results.scraping")
 
@@ -14,17 +14,16 @@ def getpage(url, name):
     return html
 
 
-def find_from_date(weeks):
-    today = date.today()
-    from_year = today.year
-    current_week = today.isocalendar().week
+def find_from_date(weeks, mydate):
+    from_year = mydate.year
+    current_week = mydate.isocalendar()[1]
     if current_week > weeks:
         from_week = current_week - weeks
     else:
         from_year -= 1
-        weeks_in_from_year = date.fromisoformat(f'{from_year}-12-31').isocalendar().week
+        weeks_in_from_year = date.fromisoformat(f'{from_year}-12-31').isocalendar()[1]
         from_week = weeks_in_from_year - (weeks - current_week)
-    from_date = date.fromisocalendar(from_year, from_week, 0)
+    from_date = date.fromisocalendar(from_year, from_week, 1)
     return from_date
 
 

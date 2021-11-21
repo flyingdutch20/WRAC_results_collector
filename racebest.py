@@ -11,7 +11,7 @@ logger = logging.getLogger("Results.racebest")
 
 def correct_period(bs_table, from_date):
     header = bs_table.find("caption").text.split()
-    if len(header) = 2:
+    if (len(header) == 2):
         year = header[1]
         month = utils.lookup_month_index_from_abbr(header[0][0:3])
         table_date = date.fromisoformat(f"{year}-{month:0>2}-01")
@@ -21,15 +21,26 @@ def correct_period(bs_table, from_date):
 
 
 def extract_race(bs_table, from_date):
+    result = []
     rows = bs_table.findAll("tr")
     for row in rows:
-        bs_row = BeautifulSoup
+        bs_row = BeautifulSoup(row, "html.parser")
+        fields = bs_row.findAll("td")
+        if len(fields) == 5:
+            #todo parse date and test if after from_date
+            race = result.Race()
+            race.date = fields[0].text
+            race.event = fields[1].text
+            race.url = fields[1].find("a").get("href")
+            race.location = fields[2].text
+            race.distance = fields[3].text
+            race.type = fields[4].text
+            result.append(race)
+    return result
 
-
-def get_index(base_url, weeks):
+def get_index(page, from_date):
     index = []
-    from_date = utils.find_from_date(weeks)
-    bs = BeautifulSoup(utils.getpage(base_url, "racebest index"), "html.parser")
+    bs = BeautifulSoup(page, "html.parser")
     months = bs.findAll("table", {"class": "table-bordered"})
     for table in months:
         bs_table = BeautifulSoup(table, "html.parser")
@@ -45,7 +56,9 @@ def get_results(race_url):
 
 def collect_result(base_url, weeks):
     results = []
-    index = get_index(base_url, weeks)
-    for race_url in index:
-        results.extend(get_results(race_url))
+    page = utils.getpage(base_url, "racebest index")
+    from_date = utils.find_from_date(weeks, date.today())
+    index = get_index(page, from_date)
+    for line in index:
+        results.extend(get_results(line))
     return results
