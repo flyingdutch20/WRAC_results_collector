@@ -1,6 +1,7 @@
 import requests
 import logging
 from datetime import date
+import re
 
 logger = logging.getLogger("Results.scraping")
 
@@ -34,3 +35,11 @@ def lookup_month_index_from_abbr(month_abbr):
     except Exception:
         month_index = 1
     return month_index
+
+def seconds_from_timestring(timestring):
+    split = re.split('[.,:; ]', timestring)
+    secs = 0
+    n = len(split)-1
+    for idx, val in enumerate(split):
+        secs += int(val)*pow(60,n-idx)
+    return secs

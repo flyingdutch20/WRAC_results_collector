@@ -24,6 +24,18 @@ class MyTestCase(unittest.TestCase):
         output = su.lookup_month_index_from_abbr("")
         self.assertEqual(1, output)
 
+    def test_seconds_from_timestring_hhmmss(self):
+        seconds = su.seconds_from_timestring("01:01:01")
+        self.assertEqual(3661, seconds)
+        seconds = su.seconds_from_timestring("01.01.01")
+        self.assertEqual(3661, seconds)
+
+    def test_seconds_from_timestring_mmss(self):
+        seconds = su.seconds_from_timestring("61:01")
+        self.assertEqual(3661, seconds)
+        seconds = su.seconds_from_timestring("15.12")
+        self.assertEqual(912, seconds)
+
 
 if __name__ == '__main__':
     unittest.main()

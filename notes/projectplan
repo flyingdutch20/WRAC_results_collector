@@ -14,6 +14,17 @@ racebest
 - index page: https://racebest.com/results
 - race result (tri) https://racebest.com/results/ux3zk
 - race result (run) https://racebest.com/results/z9g5w
+Racebest is flexible with their columns so each race can have different columns, even different headings for the
+same thing. Somehow need to map heading to how I want to record it.
+read header
+walk through fields, try to detect what it might be
+- position
+- name
+- club
+- gender
+- category (age category)
+- time / chip time / net time
+
 
 
 html = urlopen("https://www.racingpost.com/racecards/")
