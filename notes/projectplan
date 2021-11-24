@@ -24,8 +24,22 @@ walk through fields, try to detect what it might be
 - gender
 - category (age category)
 - time / chip time / net time
+loop through header words to create index for the different fields;
+[Position, Bib, Name, Club, Wave, Age Grade, Category, Category Position, Net Time, Share]
+if swim, t1, bike, t2, run then it's a triathlon
+[Position, Bib, Name, Club, Swim, T1, Bike, T2, Run, Finish Time, Share]
+for idx, val in enumerate(list):
 
-
+word_index = ['position', null, 'name', 'club', null, 'gender', 'category', 'runtime']
+possibly better to make it a dictionary to avoid not found issue;
+    idx_dict = {'position': 0, 'name': 3, 'club': 4, 'gender': 7, 'category': 8, 'runtime': 9}
+row = ['1', '234', 'jopie', 'wrac', '20-35', 'male', 'MSEN', '1:23:45', 'a link', 'more nonsense']
+regexpr = re.compile(r"wetherby|wrac")
+for row in rows:
+    club = idx_dict.get('club').lower()
+    if regexp.search(club):
+        runner = result.Result()
+        runner.position = idx_dict.get('position', '')
 
 html = urlopen("https://www.racingpost.com/racecards/")
 output = open("racingpost_index.html", "wb")
