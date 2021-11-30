@@ -14,12 +14,12 @@ class Result:
     date: date
     race: str
     distance: str  # 5k, 5M, 10k, 1/2 marathon, marathon, sprint, olympic
-    swimtime: int
-    swimtransition: int
-    biketime: int
-    biketransition: int
-    runtime: int
     comment: str
+    swimtime: int = None
+    swimtransition: int = None
+    biketime: int = None
+    biketransition: int = None
+    runtime: int = None
 
 @dataclass
 class Race():
