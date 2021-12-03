@@ -16,14 +16,17 @@ def getpage(url, name):
 
 
 def find_from_date(weeks, mydate):
+    assert weeks >= 0
+    assert isinstance(mydate, date)
     from_year = mydate.year
     current_week = mydate.isocalendar()[1]
-    if current_week > weeks:
-        from_week = current_week - weeks
-    else:
+    from_week = current_week - weeks
+    remaining_weeks = weeks - current_week
+    while remaining_weeks >= 0:
         from_year -= 1
-        weeks_in_from_year = date.fromisoformat(f'{from_year}-12-31').isocalendar()[1]
-        from_week = weeks_in_from_year - (weeks - current_week)
+        weeks_in_from_year = date.fromisoformat(f'{from_year}-12-28').isocalendar()[1]
+        from_week = weeks_in_from_year - remaining_weeks
+        remaining_weeks -= weeks_in_from_year
     from_date = date.fromisocalendar(from_year, from_week, 1)
     return from_date
 
@@ -37,9 +40,17 @@ def lookup_month_index_from_abbr(month_abbr):
     return month_index
 
 def seconds_from_timestring(timestring):
-    split = re.split('[.,:; ]', timestring)
+    regexp = re.compile("[.,:;' dhms]")
+    stripped = regexp.sub(" ", timestring).strip()
+    split = re.split(" ", stripped)
     secs = 0
     n = len(split)-1
     for idx, val in enumerate(split):
-        secs += int(val)*pow(60,n-idx)
+        try:
+            secs += int(val)*pow(60,n-idx)
+        except:
+            secs = 0
+            break
+    if secs > 0 and(len(split) == 4):
+        secs = secs - int(split[0])*pow(60,3) + int(split[0])*24*3600
     return secs
