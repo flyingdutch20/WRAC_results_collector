@@ -1,31 +1,31 @@
-from datetime import date, timedelta
+from dataclasses import dataclass
+from datetime import date
 
 
+@dataclass
 class Result:
-    def __init__(self):
-        self.pos = ''
-        self.bib = ''
-        self.runner = ''
-        self.club = ''
-        self.gender = ''
-        self.age = 0
-        self.category = ''
-        self.date =
-        self.race = ''
-        self.distance = ''       #5k, 5M, 10k, 1/2 marathon, marathon, sprint, olympic
-        self.swimtime = 0
-        self.swimtransition = 0
-        self.biketime = 0
-        self.biketransition = 0
-        self.runtime = 0
-        self.comment = ''
+    pos: str
+    bib: str
+    runner: str
+    club: str
+    gender: str
+    age: int
+    category: str
+    date: date
+    race: str
+    distance: str  # 5k, 5M, 10k, 1/2 marathon, marathon, sprint, olympic
+    comment: str
+    swimtime: int = None
+    swimtransition: int = None
+    biketime: int = None
+    biketransition: int = None
+    runtime: int = None
 
-
+@dataclass
 class Race():
-    def __init__(self):
-        self.date = ''
-        self.event = ''
-        self.url = ''
-        self.location = ''
-        self.distance = ''
-        self.type = ''
+    date: str
+    event: str
+    url: str
+    location: str
+    distance: str
+    type: str
