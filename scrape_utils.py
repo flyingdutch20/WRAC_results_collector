@@ -30,8 +30,8 @@ def find_from_date(weeks, mydate):
 
 def lookup_month_index_from_abbr(month_abbr):
     try:
-        month_index = 1 + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].index(month_abbr)
+        month_index = 1 + ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+         'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].index(month_abbr[:3].lower())
     except Exception:
         month_index = 1
     return month_index
