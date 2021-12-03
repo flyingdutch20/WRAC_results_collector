@@ -57,7 +57,7 @@ def parse_race(page, race):
         if len(fields) == 10: # running race
             #todo parse date and test if after from_date
             runner = result.Result()
-            race. = fields[0].text
+            race = fields[0].text
 
     return runners
 
