@@ -10,7 +10,7 @@ def getpage(url, name):
     r = requests.get(url)
     if r.status_code > 299:
         logger.warning(f"No results available for {name}")
-        return ""
+        return ''
     html = r.text
     return html
 

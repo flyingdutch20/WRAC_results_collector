@@ -1,8 +1,8 @@
 import os
 import logging
 import yaml
+from datetime import date
 
-import result
 import racebest
 
 ### read the config
@@ -53,7 +53,7 @@ def mail_output(output):
 
 def find_results(test, weeks):
     results = []
-    results.extend(racebest.collect_result(racebest_base_url, weeks))
+    results.extend(racebest.collect_result(racebest_base_url, weeks, test))
     output = create_output(results)
     if not test:
         mail_output(output)

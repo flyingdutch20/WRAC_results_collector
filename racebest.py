@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from datetime import date
 import logging
+import shelve
+import uuid
 
 import result
 import scrape_utils as utils
@@ -47,31 +49,49 @@ def get_races(page, from_date):
     return races
 
 
-def parse_race(page, race):
+def store_header(headerrow):
+    book = shelve.open("test-pages/racebest/headerrows")
+    book[str(uuid.uuid1())] = headerrow.text
+    book.close()
+
+def create_field_index_from_header(headerrow, test):
+    #the test parameter will extract bits of the pages and store them on disk as test sets
+    store_header(headerrow) if test else None
+    field_index = headerrow.findAll("th")
+    return field_index
+
+def create_runner(race, field_index, fields, test):
+    return result.Result()
+
+def parse_race(page, race, test):
+    #the test parameter will extract bits of the pages and store them on disk as test sets
     runners = []
     bs = BeautifulSoup(page, "html.parser")
     bs_table = bs.find("table", {"class": "results"})
     rows = bs_table.findAll("tr")
+    field_index = create_field_index_from_header(rows[0], test)
     for bs_row in rows:
         fields = bs_row.findAll("td")
-        if len(fields) == 10: # running race
-            #todo parse date and test if after from_date
-            runner = result.Result()
-            race = fields[0].text
-
+        runner = create_runner(race, field_index, fields, test)
+        runners.append(runner) if runner is not None else None
     return runners
 
-def get_results(race, base_url):
-    url = base_url + '/' + race.url
-    page = utils.getpage(url, f"racebest race {race.name}")
-    runners = parse_race(page, race)
-    return runners
+def get_results(race, base_url, test):
+    #the test parameter will extract bits of the pages and store them on disk as test sets
+    url = base_url + race.url
+    page = utils.getpage(url, f"racebest race {race.event}")
+    if page:
+        runners = parse_race(page, race, test)
+        return runners
 
-def collect_result(base_url, weeks):
+def collect_result(base_url, weeks, test=False):
+    #the test parameter will extract bits of the pages and store them on disk as test sets
     results = []
-    page = utils.getpage(base_url, "racebest index")
-    from_date = utils.find_from_date(weeks, date.today())
-    races = get_races(page, from_date)
-    for line in races:
-        results.extend(get_results(line, base_url))
-    return results
+    page = utils.getpage(base_url + '/results', "racebest index")
+    if page:
+        from_date = utils.find_from_date(weeks, date.today())
+        races = get_races(page, from_date)
+        for line in races:
+            my_result = get_results(line, base_url, test)
+            results.extend(my_result) if my_result else None
+        return results

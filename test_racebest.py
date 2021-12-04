@@ -1,7 +1,22 @@
 import pytest
+from bs4 import BeautifulSoup
 from datetime import date
 
 import racebest as rb
+import result
+
+
+@pytest.fixture()
+def headerrow_run():
+    headerrow = '<tr><th> <span class="visible-phone">Pos.</span><span class="hidden-phone">Position</span></th><th class="hidden-phone">Bib</th><th> <span class="visible-phone">Name</span><span class="hidden-phone">Name</span></th><th class="hidden-phone">Club</th><th class="hidden-phone hidden-tablet">Wave</th><th class="hidden-phone hidden-tablet">Age Grade</th><th class="hidden-phone hidden-tablet">Category</th><th class="hidden-phone hidden-tablet">Category Position</th><th> <span class="visible-phone">Net Time</span><span class="hidden-phone">Net Time</span></th><th><span class="hidden-phone">Share</span></th></tr>'
+    return BeautifulSoup(headerrow, "html.parser")
+
+def test_create_field_index_from_header(headerrow_run):
+    field_index = rb.create_field_index_from_header(headerrow_run)
+    assert len(field_index) == 10
+
+def test_create_runner(race, field_index, fields):
+    assert False
 
 
 def test_get_index():
@@ -13,11 +28,13 @@ def test_get_index():
 def test_get_runners():
     with open('test-pages/racebest/result_run.html', "r") as file:
         page = file.read()
-    runners = rb.parse_race(page)
+    race = result.Race()
+    runners = rb.parse_race(page, race)
     assert len(runners) == 118  # add assertion here
 
 def test_get_tri_runners():
     with open('test-pages/racebest/result_tri.html', "r") as file:
         page = file.read()
-    tri_runners = rb.parse_race(page)
+    race = result.Race()
+    tri_runners = rb.parse_race(page, race)
     assert len(tri_runners) == 107  # add assertion here
