@@ -51,7 +51,8 @@ def get_races(page, from_date):
 
 def store_header(headerrow):
     book = shelve.open("test-pages/racebest/headerrows")
-    book[str(uuid.uuid1())] = headerrow.text
+    my_content = headerrow.contents
+    book[str(uuid.uuid1())] = headerrow.contents
     book.close()
 
 def create_field_index_from_header(headerrow, test):
@@ -67,13 +68,16 @@ def parse_race(page, race, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     runners = []
     bs = BeautifulSoup(page, "html.parser")
-    bs_table = bs.find("table", {"class": "results"})
-    rows = bs_table.findAll("tr")
-    field_index = create_field_index_from_header(rows[0], test)
-    for bs_row in rows:
-        fields = bs_row.findAll("td")
-        runner = create_runner(race, field_index, fields, test)
-        runners.append(runner) if runner is not None else None
+    try:
+        bs_table = bs.find("table", {"class": "results"})
+        rows = bs_table.findAll("tr")
+        field_index = create_field_index_from_header(rows[0], test)
+        for bs_row in rows:
+            fields = bs_row.findAll("td")
+            runner = create_runner(race, field_index, fields, test)
+            runners.append(runner) if runner is not None else None
+    except:
+        None
     return runners
 
 def get_results(race, base_url, test):
@@ -84,7 +88,7 @@ def get_results(race, base_url, test):
         runners = parse_race(page, race, test)
         return runners
 
-def collect_result(base_url, weeks, test=False):
+def collect_result(base_url, weeks, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     results = []
     page = utils.getpage(base_url + '/results', "racebest index")

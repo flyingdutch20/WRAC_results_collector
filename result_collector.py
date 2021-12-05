@@ -51,9 +51,8 @@ def mail_output(output):
     pass
 
 
-def find_results(test, weeks):
+def find_results(test, mail, weeks):
     results = []
     results.extend(racebest.collect_result(racebest_base_url, weeks, test))
     output = create_output(results)
-    if not test:
-        mail_output(output)
+    mail_output(output) if mail else None

@@ -17,8 +17,13 @@ def get_args():
 
     parser.add_argument('-t',
                         '--test',
-                        help="Don't send the results out",
-                        action='store_false')
+                        help="Create the test pages",
+                        action='store_true')
+
+    parser.add_argument('-m',
+                        '--mail',
+                        help="Mail the results out",
+                        action='store_true')
 
     return parser.parse_args()
 
@@ -26,5 +31,6 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     test = args.test
+    mail = args.mail
     weeks = args.weeks
-    result_collector.find_results(test, weeks)
+    result_collector.find_results(test, mail, weeks)
