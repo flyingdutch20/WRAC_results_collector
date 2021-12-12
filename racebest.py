@@ -1,12 +1,10 @@
 from bs4 import BeautifulSoup
 from datetime import date
 import logging
-import shelve
-import uuid
 
 import result
 import scrape_utils as utils
-
+import racebest_utils as rb_utils
 
 logger = logging.getLogger("Results.racebest")
 
@@ -48,17 +46,21 @@ def get_races(page, from_date):
             races.extend(extract_race(bs_table, from_date))
     return races
 
-
-def store_header(headerrow):
-    book = shelve.open("test-pages/racebest/headerrows")
-    my_content = headerrow.contents
-    book[str(uuid.uuid1())] = headerrow.contents
-    book.close()
+def extract_headers(headerrow):
+    headers = headerrow.findAll("th")
+    my_fields = []
+    for header in headers:
+        spans = header.findAll("span")
+        my_text = header.text if len(spans) < 2 else spans[1].text
+        my_fields.append(my_text)
+    return my_fields
 
 def create_field_index_from_header(headerrow, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
-    store_header(headerrow) if test else None
-    field_index = headerrow.findAll("th")
+    headers = extract_headers(headerrow)
+    if test:
+        rb_utils.store_header(headers)
+    field_index = headers
     return field_index
 
 def create_runner(race, field_index, fields, test):

@@ -4,16 +4,10 @@ import yaml
 from datetime import date
 
 import racebest
+import config
 
-### read the config
-yaml_file = 'config.yml'
-try:
-    with open(yaml_file, 'r') as c_file:
-        config = yaml.safe_load(c_file)
-except Exception as e:
-    print('Error reading the config file')
-logs_dir = config['directories']['logs_dir']
-racebest_base_url = config['urls']['racebest_base_url']
+
+logs_dir = config.logs_dir()
 
 
 ### setup the logger
@@ -53,6 +47,6 @@ def mail_output(output):
 
 def find_results(test, mail, weeks):
     results = []
-    results.extend(racebest.collect_result(racebest_base_url, weeks, test))
+    results.extend(racebest.collect_result(config.racebest_base_url(), weeks, test))
     output = create_output(results)
     mail_output(output) if mail else None
