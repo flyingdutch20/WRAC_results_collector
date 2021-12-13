@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from datetime import date
 import logging
+import re
 
 import result
 import scrape_utils as utils
@@ -46,7 +47,7 @@ def get_races(page, from_date):
             races.extend(extract_race(bs_table, from_date))
     return races
 
-def extract_headers(headerrow):
+def extract_header_fields(headerrow):
     headers = headerrow.findAll("th")
     my_fields = []
     for header in headers:
@@ -55,12 +56,43 @@ def extract_headers(headerrow):
         my_fields.append(my_text)
     return my_fields
 
+
+def find_indices_from_header_fields(header_fields):
+    result = {}
+    result['pos'] = 0 if 'pos' in header_fields[0].lower() else None
+    bib = re.compile('(B|b)ib')
+    for field in header_fields:
+         if bib.search(field):
+             result["bib"] = header_fields[field]
+    bib = re.compile('(R|r)ace (N|n)umber')
+    for field in header_fields:
+         if bib.search(field):
+             result["bib"] = header_fields[field]
+    name = re.compile('(N|n)ame')
+    for field in header_fields:
+         if name.search(field):
+             result["name"] = header_fields[field]
+    club = re.compile('(C|c)lub')
+    for field in header_fields:
+         if club.search(field):
+             result["club"] = header_fields[field]
+    gender = re.compile('(G|g)ender|(S|s)ex')
+    for field in header_fields:
+         if gender.search(field):
+             result["gender"] = header_fields[field]
+    category = re.compile('(C|c)ategory')
+    position = re.compile('(P|p)osition')
+    for field in header_fields:
+         if category.search(field) and not position.search(field):
+             result["catogry"] = header_fields[field]
+#Time, Net Time, Finish Time, Gun Time
+
 def create_field_index_from_header(headerrow, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
-    headers = extract_headers(headerrow)
+    header_fields = extract_header_fields(headerrow)
     if test:
-        rb_utils.store_header(headers)
-    field_index = headers
+        rb_utils.store_header(header_fields)
+    field_index = find_indices_from_header_fields(header_fields)
     return field_index
 
 def create_runner(race, field_index, fields, test):

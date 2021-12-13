@@ -15,6 +15,12 @@ def test_create_field_index_from_header(headerrow_run):
     field_index = rb.create_field_index_from_header(headerrow_run)
     assert len(field_index) == 10
 
+def test_extract_header_fields():
+    assert False
+
+def test_find_indices_from_header_fields():
+    assert False
+
 def test_create_runner(race, field_index, fields):
     assert False
 
