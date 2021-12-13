@@ -48,12 +48,15 @@ def get_races(page, from_date):
     return races
 
 def extract_header_fields(headerrow):
-    headers = headerrow.findAll("th")
+    try:
+        headers = headerrow.findAll("th")
+    except Exception as error:
+        raise error
     my_fields = []
     for header in headers:
         spans = header.findAll("span")
         my_text = header.text if len(spans) < 2 else spans[1].text
-        my_fields.append(my_text)
+        my_fields.append(my_text) if my_text else None
     return my_fields
 
 
