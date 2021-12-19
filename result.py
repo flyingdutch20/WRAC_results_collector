@@ -6,20 +6,24 @@ from datetime import date
 class Result:
     pos: str = ''
     bib: str = ''
-    runner: str = ''
+    name: str = ''
     club: str = ''
     gender: str = ''
-    age: int = 0
+    age: str = ''
     category: str = ''
-    date: date = date.today()
+    date: str = ''
     race: str = ''
+    racetype: str = ''
+    location: str = ''
     distance: str = ''  # 5k, 5M, 10k, 1/2 marathon, marathon, sprint, olympic
     comment: str = ''
-    swimtime: int = None
-    swimtransition: int = None
-    biketime: int = None
-    biketransition: int = None
-    runtime: int = None
+    swim: str = ''
+    t1: str = ''
+    bike: str = ''
+    t2: str = ''
+    run: str = ''
+    time: str = ''
+    winningtime: str = ''
 
 @dataclass
 class Race():
@@ -29,3 +33,4 @@ class Race():
     location: str = ''
     distance: str = ''
     type: str = ''
+    winningtime: str = ''

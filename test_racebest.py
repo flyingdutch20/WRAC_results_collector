@@ -12,8 +12,8 @@ def headerrow_run():
     return bs(headerrow, "html.parser")
 
 def test_create_field_index_from_header(headerrow_run):
-    field_index = rb.create_field_index_from_header(headerrow_run)
-    assert len(field_index) == 10
+    field_index = rb.create_field_index_from_header(headerrow_run,False)
+    assert isinstance(field_index,dict)
 
 class TestExtractHeaderFields():
     def test_extract_header_fields_no_param(self):
@@ -76,24 +76,26 @@ class TestFindIndicesFromHeaderFields():
             rb.find_indices_from_header_fields()
 
     def test_find_indices_from_header_fields_bad_input(self):
-        # 2. empty list
-        with pytest.raises(AttributeError):
+        # 1. bad input; no list
+        with pytest.raises(AssertionError):
             rb.find_indices_from_header_fields("bad")
 
     def test_find_indices_from_header_fields_empty_list(self):
-        # 3. list with 1 element
+        # 2. empty list
         result = rb.find_indices_from_header_fields([])
-        assert result == {}
+        assert isinstance(result, dict)
 
     def test_find_indices_from_header_fields_single_element(self):
-        # 4. 1st always 'position'
+        # 3. list with 1 element
         result = rb.find_indices_from_header_fields(['whatever'])
-        assert result['position'] == 0
+        assert isinstance(result, dict)
 
     def test_find_indices_from_header_fields_first_always_position(self):
-        # 4. 1st always 'position'
-        result = rb.find_indices_from_header_fields(['whatever','abc','position','def','age position'])
-        assert result['position'] == 0
+        # 4. 1st always 'pos'
+        result = rb.find_indices_from_header_fields(['position','abc','position','def','age position'])
+        assert result['pos'] == 0
+        result = rb.find_indices_from_header_fields(['nothing','abc','position','def','age position'])
+        assert result['pos'] is None
 
     def test_find_indices_from_header_fields_find_bib(self):
         # 5. find 'bib', 'Bib', 'BIB', 'Race Number', 'Bib Number'
@@ -111,6 +113,8 @@ class TestFindIndicesFromHeaderFields():
         assert result['bib'] == 3
         result = rb.find_indices_from_header_fields(['whatever','position','Bib Number','age position'])
         assert result['bib'] == 2
+        result = rb.find_indices_from_header_fields(['whatever','position','Bibber Number','age position'])
+        assert result['bib'] is None
 
     def test_find_indices_from_header_fields_find_name(self):
         # 6. find 'Name'
@@ -141,7 +145,7 @@ class TestFindIndicesFromHeaderFields():
         result = rb.find_indices_from_header_fields(['whatever','Category Position','Time','Age Category','Gender','def','age position'])
         assert result['category'] == 3
 
-    def test_find_indices_from_header_fields_find_category(self):
+    def test_find_indices_from_header_fields_find_time(self):
         # 9. find 'Time', 'TIME', 'Net Time', 'Finish Time', 'Chip Time'. If multiple, then order 'Chip Time', 'Net Time', 'Finish Time', 'Time'
         result = rb.find_indices_from_header_fields(['Pos', 'Category Position', 'Time'])
         assert result['time'] == 2
@@ -157,8 +161,6 @@ class TestFindIndicesFromHeaderFields():
         assert result['time'] == 5
         result = rb.find_indices_from_header_fields(['Pos', 'abc', 'Time', 'Finish Time', 'Net Time'])
         assert result['time'] == 4
-        result = rb.find_indices_from_header_fields(['Pos', 'abc', 'Time', 'Finish Time', 'Net Time', 'Chip Time'])
-        assert result['time'] == 3
         result = rb.find_indices_from_header_fields(['Pos', 'abc', 'Chip Time', 'Finish Time', 'Net Time', 'Chip Time'])
         assert result['time'] == 2
 
@@ -179,13 +181,13 @@ class TestFindIndicesFromHeaderFields():
     def test_find_indices_from_header_fields_find_club(self):
         # 11. find 'Club', 'Club / Sponsor', 'Club Name', 'Team', 'Team Name'. If both Club and Team then Club prevails
         result = rb.find_indices_from_header_fields(['whatever','position','Club','age position'])
-        assert result['name'] == 2
+        assert result['club'] == 2
         result = rb.find_indices_from_header_fields(['whatever','Bib','Name','Club Name','Race Name'])
-        assert result['name'] == 3
+        assert result['club'] == 3
         result = rb.find_indices_from_header_fields(['whatever','Bib','Name','Time', 'Team','Race Name'])
-        assert result['name'] == 3
+        assert result['club'] == 4
         result = rb.find_indices_from_header_fields(['whatever','Race Name','Club', 'Team Name','Time','Name','def','age position'])
-        assert result['name'] == 2
+        assert result['club'] == 2
 
 
 def test_create_runner(race, field_index, fields):
