@@ -276,7 +276,7 @@ def create_runner(race, field_index, fields, test):
     runner.winningtime = race.winningtime
     return runner
 
-def parse_race(page, race, test):
+def parse_race(page, race, test=False):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     runners = []
     bs = BeautifulSoup(page, "html.parser")

@@ -5,6 +5,7 @@ from datetime import date
 
 import racebest
 import config
+import output
 
 
 logs_dir = config.logs_dir()
@@ -38,8 +39,8 @@ logger.error('Error message should go everywhere')
 
 
 def create_output(results):
-    pass
-
+    output.output_as_csv(results)
+    #TODO return the file path
 
 def mail_output(output):
     pass

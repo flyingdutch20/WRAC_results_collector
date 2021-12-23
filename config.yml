@@ -3,6 +3,7 @@ general:
 
 directories:
   logs_dir: logs
+  output_dir: output
 
 urls:
   racebest_base_url: https://racebest.com

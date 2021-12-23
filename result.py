@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from dataclasses import asdict
 
 
 @dataclass
@@ -24,6 +24,13 @@ class Result:
     run: str = ''
     time: str = ''
     winningtime: str = ''
+
+    @staticmethod
+    def fields():
+        return Result.__dict__.keys()
+
+    def to_dict(self):
+        return asdict(self)
 
 @dataclass
 class Race():

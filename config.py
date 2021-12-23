@@ -11,6 +11,9 @@ except Exception as e:
 def logs_dir():
     return config['directories']['logs_dir']
 
+def output_dir():
+    return config['directories']['output_dir']
+
 def racebest_base_url():
     return config['urls']['racebest_base_url']
 
