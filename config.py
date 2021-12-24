@@ -1,21 +1,25 @@
 import yaml
 
-### read the config
-yaml_file = 'config.yml'
-try:
-    with open(yaml_file, 'r') as c_file:
-        config = yaml.safe_load(c_file)
-except Exception as e:
-    print('Error reading the config file')
+def read_yaml_file(yaml_file):
+    ### read the config
+    try:
+        with open(yaml_file, 'r') as c_file:
+            return yaml.safe_load(c_file)
+    except Exception as e:
+        return False
 
-def logs_dir():
-    return config['directories']['logs_dir']
+def read_config(yaml_file, param):
+    config = read_yaml_file(yaml_file)
+    return config[param[0]][param[1]] if config else ''
 
-def output_dir():
-    return config['directories']['output_dir']
+def logs_dir(yaml_file='config.yml'):
+    return read_config(yaml_file,('directories','logs_dir'))
 
-def racebest_base_url():
-    return config['urls']['racebest_base_url']
+def output_dir(yaml_file='config.yml'):
+    return read_config(yaml_file,('directories','output_dir'))
 
-def racebest_headers_shelve():
-    return config["shelves"]["racebest_headers"]
+def racebest_base_url(yaml_file='config.yml'):
+    return read_config(yaml_file,('urls','racebest_base_url'))
+
+def racebest_headers_shelve(yaml_file='config.yml'):
+    return read_config(yaml_file,('shelves','racebest_headers'))

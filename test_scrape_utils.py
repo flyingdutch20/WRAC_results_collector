@@ -3,23 +3,7 @@ import pytest
 
 import scrape_utils as su
 
-"""
-Test lookup_month_index_from_abbr
-Input is string, output is month index as integer
-If input is not in the lookup table, then return 1
-If input is None, return error invalid input
-If input is longer than 3 characters, use first 3 characters
-Input and lookup should be case insensitive
-"""
 
-def test_lookup_month_index_from_abbr():
-    with pytest.raises(TypeError):
-        su.lookup_month_index_from_abbr()
-    assert su.lookup_month_index_from_abbr('Jan') == 1
-    assert su.lookup_month_index_from_abbr('') == 1
-    assert su.lookup_month_index_from_abbr('aaa') == 1
-    assert su.lookup_month_index_from_abbr('jun') == 6
-    assert su.lookup_month_index_from_abbr('August') == 8
 
 """
 Test find_from_date
@@ -68,6 +52,25 @@ def test_find_from_date_jump_full_year(my_date):
     outdate = su.find_from_date(57, my_date)
     testdate = date.fromisoformat("2019-12-30")
     assert outdate == testdate
+
+"""
+Test lookup_month_index_from_abbr
+Input is string, output is month index as integer
+If input is not in the lookup table, then return 1
+If input is None, return error invalid input
+If input is longer than 3 characters, use first 3 characters
+Input and lookup should be case insensitive
+"""
+
+def test_lookup_month_index_from_abbr():
+    with pytest.raises(TypeError):
+        su.lookup_month_index_from_abbr()
+    assert su.lookup_month_index_from_abbr('Jan') == 1
+    assert su.lookup_month_index_from_abbr('') == 1
+    assert su.lookup_month_index_from_abbr('aaa') == 1
+    assert su.lookup_month_index_from_abbr('jun') == 6
+    assert su.lookup_month_index_from_abbr('August') == 8
+
 
 """
 Test seconds_from_timestring
