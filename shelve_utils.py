@@ -1,3 +1,4 @@
+import os.path
 import shelve
 import csv
 
@@ -22,9 +23,3 @@ def output_shelve_as_txt():
                 line = db[key] + '\n'
                 my_file.write(line)
 
-
-def delete_shelve(shelve_path):
-    pass
-
-def delect_all_shelves(shelves_dir):
-    pass

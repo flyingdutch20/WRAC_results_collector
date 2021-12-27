@@ -3,10 +3,10 @@ import uuid
 
 import config
 
-
-shelve_path = config.racebest_headers_shelve()
-
-def store_header(fields):
-    with shelve.open(shelve_path) as book:
+def store_header(fields, yaml_file=None):
+    if not isinstance(fields,list):
+        raise TypeError
+    shelve_path = config.racebest_headers_shelve(yaml_file)
+    with shelve.open(shelve_path, flag='n') as book:
         book[str(uuid.uuid1())] = fields
 
