@@ -10,36 +10,20 @@ result(class): definition of the runner
 - knows how to create output (excel/html)
 - knows how to write the result to a database
 
-racebest
-- index page: https://racebest.com/results
-- race result (tri) https://racebest.com/results/ux3zk
-- race result (run) https://racebest.com/results/z9g5w
-Racebest is flexible with their columns so each race can have different columns, even different headings for the
-same thing. Somehow need to map heading to how I want to record it.
-read header
-walk through fields, try to detect what it might be
-- position
-- name
-- club
-- gender
-- category (age category)
-- time / chip time / net time
-loop through header words to create index for the different fields;
-[Position, Bib, Name, Club, Wave, Age Grade, Category, Category Position, Net Time, Share]
-if swim, t1, bike, t2, run then it's a triathlon
-[Position, Bib, Name, Club, Swim, T1, Bike, T2, Run, Finish Time, Share]
-for idx, val in enumerate(list):
+https://races.fellrunner.org.uk/results
 
-word_index = ['position', null, 'name', 'club', null, 'gender', 'category', 'runtime']
-possibly better to make it a dictionary to avoid not found issue;
-    idx_dict = {'position': 0, 'name': 3, 'club': 4, 'gender': 7, 'category': 8, 'runtime': 9}
-row = ['1', '234', 'jopie', 'wrac', '20-35', 'male', 'MSEN', '1:23:45', 'a link', 'more nonsense']
-regexpr = re.compile(r"wetherby|wrac")
-for row in rows:
-    club = idx_dict.get('club').lower()
-    if regexp.search(club):
-        runner = result.Result()
-        runner.position = idx_dict.get('position', '')
+https://www.race-results.co.uk/results/2021/
+
+https://runabc.co.uk/results/3
+
+https://www.runthrough.co.uk/results/
+
+https://toughrunneruk.com/results/
+
+https://resultsbase.net/
+
+thepowerof10.info
+
 
 html = urlopen("https://www.racingpost.com/racecards/")
 output = open("racingpost_index.html", "wb")

@@ -1,0 +1,40 @@
+https://www.runbritainrankings.com/results/resultslookup.aspx
+
+Returns a page with an index page of the most recent races - last 14 days
+
+There is a function to query other dates - to do at later stage
+
+index page has name and date of race. If race has full results, it has a link to the full result
+<a href="/results/results.aspx?meetingid=440773">Full</a>
+
+Page address
+https://www.runbritainrankings.com/results/results.aspx?meetingid=440773
+
+Opens the first results page.
+
+If more than one page - find the number of pages
+<span id="cphBody_lblTopPageLinks">Page: <a href="/results/results.aspx?meetingid=440773&amp;pagenum=1">1</a> 2 </span>
+
+On the first page, set the race details (date, name, location) and parse the first line for the winning time of the race
+
+<div id="content-top-holder">
+    <table style="margin-top:10px">
+        <tbody><tr>
+            <td>
+                <span id="cphBody_lblMeetingDetails"><b>(Not on) Boxing Day 5</b> <a href="https://www.thepowerof10.info/resultsfiles/2021/440773_7901_27122021170420.xls" target="_blank">External Results</a><br>Witham<br>27 Dec 21</span>
+            </td>
+        </tr>
+    </tbody></table>
+</div>
+
+Results table:
+<table cellspacing="0" cellpadding="2" id="cphBody_gvP" style="width:100%;border-collapse:collapse;">
+
+Distance is at top of results table:
+<tr style="background-color:Transparent;">
+						<td colspan="78"><a name="r1"></a><b>5M</b></td>
+					</tr>
+
+Wetherby 10k 2021:
+https://www.runbritainrankings.com/results/results.aspx?meetingid=423637
+
