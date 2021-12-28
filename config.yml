@@ -7,6 +7,7 @@ directories:
 
 urls:
   racebest_base_url: https://racebest.com
+  ukresults_base_url: https://www.ukresults.net
 
 shelves:
   racebest_headers: test-pages/racebest/headerrows

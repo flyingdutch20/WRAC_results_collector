@@ -4,7 +4,7 @@ import logging
 import re
 
 import result
-import scrape_utils as utils
+import scrape_utils as scr_utils
 import racebest_utils as rb_utils
 
 logger = logging.getLogger("Results.racebest")
@@ -14,7 +14,7 @@ def correct_period(bs_table, from_date):
     header = bs_table.find("caption").text.split()
     if (len(header) == 2):
         year = header[1]
-        month = utils.lookup_month_index_from_abbr(header[0][0:3])
+        month = scr_utils.lookup_month_index_from_abbr(header[0][0:3])
         table_date = date.fromisoformat(f"{year}-{month:0>2}-01")
     else:
         table_date = date.today()
@@ -303,7 +303,7 @@ def parse_race(page, race, test=False):
 def get_results(race, base_url, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     url = base_url + race.url
-    page = utils.getpage(url, f"racebest race {race.event}")
+    page = scr_utils.getpage(url, f"racebest race {race.event}")
     if page:
         #logger.info(f"Parsing {race.event} - {race.date}")
         runners = parse_race(page, race, test)
@@ -313,9 +313,9 @@ def collect_result(base_url, weeks, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     results = []
     logger.info("Retrieving the index page ...")
-    page = utils.getpage(base_url + '/results', "racebest index")
+    page = scr_utils.getpage(base_url + '/results', "racebest index")
     if page:
-        from_date = utils.find_from_date(weeks, date.today())
+        from_date = scr_utils.find_from_date(weeks, date.today())
         races = get_races(page, from_date)
         logger.info(f"Retrieving the individual race pages; {len(races)} in total")
         for line in races:

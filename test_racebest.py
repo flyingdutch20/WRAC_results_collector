@@ -190,10 +190,6 @@ class TestFindIndicesFromHeaderFields():
         assert result['club'] == 2
 
 
-def test_create_runner(race, field_index, fields):
-    assert False
-
-
 def test_get_index():
     with open('test-pages/racebest/index.html', "r") as file:
         page = file.read()
@@ -204,12 +200,13 @@ def test_get_runners():
     with open('test-pages/racebest/result_run.html', "r") as file:
         page = file.read()
     race = result.Race()
-    runners = rb.parse_race(page, race)
-    assert len(runners) == 118  # add assertion here
+    wrac_runners = rb.parse_race(page, race)
+    assert len(wrac_runners) == 0  # add assertion here
 
 def test_get_tri_runners():
     with open('test-pages/racebest/result_tri.html', "r") as file:
         page = file.read()
     race = result.Race()
-    tri_runners = rb.parse_race(page, race)
-    assert len(tri_runners) == 107  # add assertion here
+    wrac_tri_runners = rb.parse_race(page, race)
+    assert len(wrac_tri_runners) == 1  # add assertion here
+
