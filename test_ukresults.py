@@ -45,12 +45,18 @@ def index_page_2022():
     with open('test-pages/ukresults/index_2022.html', "r") as file:
         return file.read()
 
-def test_get_races(index_page_2021):
-    races = ukr.get_races(index_page, year, date.fromisoformat('2021-01-01'), base_url)
-    assert len(races) == 109  # add assertion here
+def test_get_races(index_page_2022):
+    year = 2022
+    base_url = "base_url"
+    from_date = date.fromisoformat('2022-01-01')
+    to_date = date.fromisoformat('2022-01-31')
+    races = ukr.get_races(index_page_2022, year, from_date, to_date, base_url)
+    assert len(races) == 4
 
 def test_get_selection_of_races(index_page_2021):
-    races = ukr.get_races(index_page, year, date.fromisoformat('2021-10-01'), base_url)
+    year = 2021
+    base_url = "base_url"
+    races = ukr.get_races(index_page_2021, year, date.fromisoformat('2021-10-01'), base_url)
     assert len(races) == 34  # add assertion here
 
 def test_get_index_pages():

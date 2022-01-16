@@ -12,39 +12,38 @@ def get_results(line, base_url, test):
     results = []
     return results
 
-def parse_race_row(row, month, year, base_url):
+def parse_race_row(row, year, from_date, to_date, base_url):
     '"<tr><td>05 April</td><td><a href="fast5kapra.html"><b>Fast 5k Races, Three Sisters Circuit, Wigan, Lancashire</b></a></td></tr>"'
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     try:
-        date_string = row.find("td").text
+        date_split = row.find("td").text.split(" ")
         a = row.find("a")
         link = a['href']
         name = a.text
         #create date
-        day = date_string.split(" ")[0]
-        race_date = date.fromisoformat(f"{year}-{month:02d}-01")
-        race = result.Race()
-        race.date = race_date
-        race.event = name
-        race.url = f"{base_url}/{year}/{link}"
-        return race
+        day = date_split[0][0:2]
+        month = months.index(date_split[1]) + 1
+        race_date = date.fromisoformat(f"{year}-{month:02d}-{day}")
+        if from_date <= race_date <= to_date:
+            race = result.Race()
+            race.date = race_date
+            race.event = name
+            race.url = f"{base_url}/{year}/{link}"
+            return race
     except:
         return None
 
 def get_races(page, year, from_date, to_date, base_url):
     races = []
     bs = BeautifulSoup(page, "html.parser")
-    months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
-    for idx, month in enumerate(months):
-        try:
-            bs_month = bs.find("a", {"name": month})
-            bs_table = bs.find("table", {"class": "results"})
-            rows = bs_table.findAll("tr")
-            for row in rows:
-                race = parse_race_row(row, idx+1, year, base_url)
-                if race:
-                    races.append(race)
-        except:
-            None
+    try:
+        rows = bs.findAll("tr")
+        for row in rows:
+            race = parse_race_row(row, year, from_date, to_date, base_url)
+            if race:
+                races.append(race)
+    except:
+        None
     return races
 
 
