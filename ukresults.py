@@ -9,24 +9,25 @@ import scrape_utils as scr_utils
 logger = logging.getLogger("Results.ukresults")
 
 def get_results(line, base_url, test):
-    pass
+    results = []
+    return results
 
 
 def get_races(page, from_date):
-    pass
+    races = []
+    return races
 
 
 def collect_result(base_url, weeks, test):
     results = []
     logger.info("Retrieving the index page ...")
-    #work out the year(s)
     from_date = scr_utils.find_from_date(weeks, date.today())
-    for year in range(from_date.year,date.today().year):
+    for year in range(from_date.year,date.today().year + 1): # range excludes last number
         page = scr_utils.getpage(f"{base_url}/{year}/index.html", "ukresults index")
         if page:
             races = get_races(page, from_date)
             logger.info(f"Retrieving the individual race pages; {len(races)} in total")
-            for line in races:
-                my_result = get_results(line, base_url, test)
+            for race in races:
+                my_result = get_results(race, base_url, test)
                 results.extend(my_result) if my_result else None
     return results

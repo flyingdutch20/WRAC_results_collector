@@ -321,4 +321,4 @@ def collect_result(base_url, weeks, test):
         for line in races:
             my_result = get_results(line, base_url, test)
             results.extend(my_result) if my_result else None
-        return results
+    return results

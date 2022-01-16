@@ -54,7 +54,7 @@ def find_results(test, mail, weeks):
     results.extend(racebest.collect_result(config.racebest_base_url(), weeks, test))
     logger.info("Collecting from UKresults ...")
     results.extend(ukresults.collect_result(config.ukresults_base_url(), weeks, test))
-#    logger.info("Collecting from Racebest ...")
-#    results.extend(racebest.collect_result(config.racebest_base_url(), weeks, test))
+    logger.info("Collecting from Runbritain ...")
+    results.extend(runbritain.collect_result(config.runbritain_base_url(), weeks, test))
     output = create_output(results)
     mail_output(output) if mail else None
