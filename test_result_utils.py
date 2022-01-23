@@ -2,7 +2,7 @@ import pytest
 import os
 import config
 
-import racebest_utils as rbu
+import result_utils as rbu
 import result
 import shelve
 import uuid
@@ -36,9 +36,9 @@ test store header as shelve
 
 def test_store_header_input_errors(config_yaml):
     with pytest.raises(TypeError):
-        rbu.store_header(None,config_yaml)
+        rbu.store_racebest_header(None, config_yaml)
     with pytest.raises(TypeError):
-        rbu.store_header("blabla",config_yaml)
+        rbu.store_racebest_header("blabla", config_yaml)
 
 @pytest.mark.parametrize(
     'items',
@@ -50,15 +50,15 @@ def test_store_header_input_errors(config_yaml):
     ],
 )
 def test_store_header_multiple(config_yaml,items):
-    rbu.store_header(items,config_yaml)
+    rbu.store_racebest_header(items, config_yaml)
     shelve_path = config.racebest_headers_shelve(config_yaml)
     with shelve.open(shelve_path) as book:
         my_list = list(book.values())[0]
         assert len(my_list) == len(items)
 
 def test_store_header_new_book_every_time(config_yaml):
-    rbu.store_header((['one','two','three']),config_yaml)
-    rbu.store_header((['new']),config_yaml)
+    rbu.store_racebest_header((['one', 'two', 'three']), config_yaml)
+    rbu.store_racebest_header((['new']), config_yaml)
     shelve_path = config.racebest_headers_shelve(config_yaml)
     with shelve.open(shelve_path) as book:
         my_list = list(book.values())[0]

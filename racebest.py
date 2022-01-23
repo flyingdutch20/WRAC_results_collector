@@ -5,7 +5,7 @@ import re
 
 import result
 import scrape_utils as scr_utils
-import racebest_utils as rb_utils
+import result_utils as rb_utils
 
 logger = logging.getLogger("Results.racebest")
 
@@ -255,7 +255,7 @@ def create_field_index_from_header(headerrow, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     header_fields = extract_header_fields(headerrow)
     if test:
-        rb_utils.store_header(header_fields)
+        rb_utils.store_racebest_header(header_fields)
     field_index = find_indices_from_header_fields(header_fields)
     return field_index
 

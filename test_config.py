@@ -98,8 +98,8 @@ def test_read_config_bad_params(good_yaml):
     assert not isinstance(result, tuple)
 
 def test_read_config_bad_file_param(bad_yaml_nonsense):
-    result = config.read_config(bad_yaml_nonsense,('first','second'))
-    assert result == ''
+    with pytest.raises(TypeError):
+        config.read_config(bad_yaml_nonsense,('first','second'))
 
 def test_read_config_bad_file_one_level(bad_yaml_one_level):
     result = config.read_config(bad_yaml_one_level,('first','second'))

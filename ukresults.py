@@ -5,11 +5,70 @@ import re
 
 import result
 import scrape_utils as scr_utils
+import result_utils as res_utils
 
 logger = logging.getLogger("Results.ukresults")
 
+def find_indices_from_header_fields(header_fields):
+    assert isinstance(header_fields,list)
+    result = {}
+    """
+    result['pos'] = 0 if header_fields and 'pos' in header_fields[0].lower() else None
+    result['bib'] = find_bib_index(header_fields)
+    result['name'] = find_name_index(header_fields)
+    result['club'] = find_club_index(header_fields)
+    result['gender'] = find_gender_index(header_fields)
+    result['category'] = find_category_index(header_fields)
+    result['time'] = find_time_index(header_fields)
+    """
+    return result
+
+
+def extract_header_fields(headerrow):
+    try:
+        headers = headerrow.findAll("th")
+    except Exception as error:
+        raise error
+    my_fields = []
+    for header in headers:
+        my_text = header.text.strip()
+        my_fields.append(my_text) if my_text else None
+    return my_fields
+
+def create_field_index_from_header(headerrow, test):
+    #the test parameter will extract bits of the pages and store them on disk as test sets
+    header_fields = extract_header_fields(headerrow)
+    if test:
+        res_utils.store_ukresults_header(header_fields)
+    field_index = find_indices_from_header_fields(header_fields)
+    return field_index
+
+
 def get_results(line, base_url, test):
     results = []
+    url = base_url + line.url
+    page = scr_utils.getpage(url, f"ukresults {line.event}")
+    bs = BeautifulSoup(page, "html.parser")
+    all_text = bs.text
+    wr = re.compile('wrac|wetherby', flags=re.I)
+    if wr.search(all_text):
+        logger.info(f"Race {race.event} has Wetherby Runners participants")
+        try:
+            bs_table = bs.find("table", {"class": "sortable"})
+            rows = bs_table.findAll("tr")
+            field_index = create_field_index_from_header(rows[0], test)
+            if field_index['club']:
+                # if no club then no point in parsing
+                for bs_row in rows:
+                    fields = bs_row.findAll("td")
+                    if fields:
+                        runner = create_runner(race, field_index, fields, test)
+                        if runner is not None and wr.search(runner.club):
+                            runners.append(runner)
+        except:
+            None
+    return runners
+
     return results
 
 def parse_race_row(row, year, from_date, to_date, base_url):

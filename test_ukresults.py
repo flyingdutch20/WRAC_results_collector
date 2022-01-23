@@ -5,6 +5,16 @@ from datetime import date
 import ukresults as ukr
 import result
 
+
+
+headerrow = '<th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Pos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Num<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">M<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">F<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Name<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Cat<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">CatPos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Club<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">ChipTime<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">ChipPos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Pace per Km/Mile<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">GunTime<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th></tr>'
+
+
+def test_create_field_index_from_header():
+    row = bs(headerrow, 'html.parser')
+    fields = ukr.create_field_index_from_header(row)
+    assert len(fields) == 9
+
 """
 get_races scenarios
 1. we're in Dec and want Nov and Dec
@@ -29,9 +39,9 @@ https://www.ukresults.net/2022/index.html
 def test_parse_race_line():
     line = '<tr><td>05 April</td><td><a href="fast5kapra.html"><b>Fast 5k Races, Three Sisters Circuit, Wigan, Lancashire</b></a></td></tr>'
     bs_line = bs(line, "html.parser")
-    my_race = ukr.parse_race_row(bs_line, 4, 2021, "/base_url/")
+    my_race = ukr.parse_race_row(bs_line, 2021, date.fromisoformat("2021-01-01"), date.fromisoformat("2021-12-31"), "/base_url")
     assert my_race.date == date.fromisoformat("2021-04-05")
-    assert my_race.url == "/base_url/fast5kapra.html"
+    assert my_race.url == "/base_url/2021/fast5kapra.html"
     assert my_race.event == "Fast 5k Races, Three Sisters Circuit, Wigan, Lancashire"
 
 
@@ -56,7 +66,7 @@ def test_get_races(index_page_2022):
 def test_get_selection_of_races(index_page_2021):
     year = 2021
     base_url = "base_url"
-    races = ukr.get_races(index_page_2021, year, date.fromisoformat('2021-10-01'), base_url)
+    races = ukr.get_races(index_page_2021, year, date.fromisoformat('2021-10-01'), date.fromisoformat('2021-12-31'), base_url)
     assert len(races) == 34  # add assertion here
 
 def test_get_index_pages():
