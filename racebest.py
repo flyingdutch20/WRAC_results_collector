@@ -40,18 +40,6 @@ def extract_races_in_month_table(bs_table, from_date):
                 races.append(race)
     return races
 
-def get_races(page, from_date):
-    races = []
-    logger.info("Parsing the index page to extract the individual races")
-    bs = BeautifulSoup(page, "html.parser")
-    months = bs.findAll("table", {"class": "table-bordered"})
-    #logger.info(f"Found {len(months)} months")
-    for bs_table in months:
-        if correct_period(bs_table, from_date):
-            month_races = extract_races_in_month_table(bs_table, from_date)
-            races.extend(month_races)
-    return races
-
 def extract_header_fields(headerrow):
     try:
         headers = headerrow.findAll("th")
@@ -309,6 +297,20 @@ def get_results(race, base_url, test):
         runners = parse_race(page, race, test)
         return runners
 
+
+def get_races(page, from_date):
+    races = []
+    logger.info("Parsing the index page to extract the individual races")
+    bs = BeautifulSoup(page, "html.parser")
+    months = bs.findAll("table", {"class": "table-bordered"})
+    #logger.info(f"Found {len(months)} months")
+    for bs_table in months:
+        if correct_period(bs_table, from_date):
+            month_races = extract_races_in_month_table(bs_table, from_date)
+            races.extend(month_races)
+    return races
+
+
 def collect_result(base_url, weeks, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
     results = []
@@ -318,7 +320,7 @@ def collect_result(base_url, weeks, test):
         from_date = scr_utils.find_from_date(weeks, date.today())
         races = get_races(page, from_date)
         logger.info(f"Retrieving the individual race pages; {len(races)} in total")
-        for line in races:
-            my_result = get_results(line, base_url, test)
+        for race in races:
+            my_result = get_results(race, base_url, test)
             results.extend(my_result) if my_result else None
     return results

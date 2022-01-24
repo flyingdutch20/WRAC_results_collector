@@ -13,3 +13,4 @@ urls:
 shelves:
   racebest_headers: test-pages/racebest/headerrows
   ukresults_headers: test-pages/ukresults/headerrows
+  runbritain_headers: test-pages/runbritain/headerrows

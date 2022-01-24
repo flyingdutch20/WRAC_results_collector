@@ -9,11 +9,10 @@ import result
 
 headerrow = '<th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Pos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Num<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">M<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">F<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Name<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Cat<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">CatPos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Club<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">ChipTime<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">ChipPos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Pace per Km/Mile<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">GunTime<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th></tr>'
 
-
 def test_create_field_index_from_header():
     row = bs(headerrow, 'html.parser')
-    fields = ukr.create_field_index_from_header(row)
-    assert len(fields) == 9
+    fields = ukr.create_field_index_from_header(row, False)
+    assert len(fields) == 8
 
 """
 get_races scenarios

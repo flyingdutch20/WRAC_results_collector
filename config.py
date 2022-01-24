@@ -23,3 +23,15 @@ def racebest_base_url(yaml_file='config.yml'):
 
 def racebest_headers_shelve(yaml_file='config.yml'):
     return read_config(yaml_file,('shelves','racebest_headers'))
+
+def ukresults_base_url(yaml_file='config.yml'):
+    return read_config(yaml_file,('urls','ukresults_base_url'))
+
+def ukresults_headers_shelve(yaml_file='config.yml'):
+    return read_config(yaml_file,('shelves','ukresults_headers'))
+
+def runbritain_base_url(yaml_file='config.yml'):
+    return read_config(yaml_file,('urls','runbritain_base_url'))
+
+def runbritain_headers_shelve(yaml_file='config.yml'):
+    return read_config(yaml_file,('shelves','runbritain_headers'))
