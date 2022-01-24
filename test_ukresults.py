@@ -5,7 +5,15 @@ from datetime import date
 import ukresults as ukr
 import result
 
+"multiple table examples - if multiple tables, then each table has their own pos 1!"
+"https://www.ukresults.net/2021/greenwayjun.html"
+"https://www.ukresults.net/2021/bmc5kapr.html"
 
+"why did it skip https://www.ukresults.net/2021/wetherbyfun.html - forename/surname separate"
+"another forename/surname https://www.ukresults.net/2021/norland.html"
+
+"duathlon https://www.ukresults.net/2021/airportdu.html"
+"duathlon run-bike-run https://www.ukresults.net/2021/hesketh.html"
 
 headerrow = '<th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Pos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Num<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">M<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">F<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Name<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Cat<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">CatPos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Club<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">ChipTime<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">ChipPos<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">Pace per Km/Mile<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th><th><a href="#" class="sortheader" onclick="ts_resortTable(this);return false;">GunTime<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a></th></tr>'
 
