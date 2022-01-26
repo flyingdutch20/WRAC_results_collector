@@ -191,14 +191,42 @@ def create_runner(race, field_index, fields, test):
         runner.gender = runner.category[0]
     return runner
 
+def multi_races_page(bs, race, test):
+    runners = []
+    multi_races_tables = bs.findAll("table")
+    if len(multi_races_tables) > 1:
+        return runners
+    race_rows = multi_races_tables[0].findAll("tr")
+    single = True
+    if len(race_rows) < 20:
+        for row in race_rows:
+            if len(row.findAll("td")) > 1:
+                return runners
+    for row in race_rows:
+        try:
+            a = row.find("a")
+            link = a['href']
+            name = a.text
+            subrace = result.Race()
+            subrace.url = link
+            subrace.event = f"{race.event} - {name}"
+            subrace.date = race.date
+            subrace.year = race.year
+            subrace.base_url = race.base_url
+            subrace_results = get_results(subrace, test)
+            runners.extend(subrace_results)
+        except:
+            None
+    return runners
 
-def parse_race(page, race, test):
+def parse_race(page, myrace, test):
     runners = []
     bs = BeautifulSoup(page, "html.parser")
+    runners.append(multi_races_page(bs, myrace, test))
     all_text = bs.text
     wr = re.compile('wrac|wetherby', flags=re.I)
     if wr.search(all_text):
-        logger.info(f"Race {race.event} has Wetherby Runners participants")
+        logger.info(f"Race {myrace.event} has Wetherby Runners participants")
         try:
             bs_table = bs.find("table", {"class": "sortable"})
             rows = bs_table.findAll("tr")
@@ -208,7 +236,7 @@ def parse_race(page, race, test):
                 for bs_row in rows:
                     fields = bs_row.findAll("td")
                     if fields:
-                        runner = create_runner(race, field_index, fields, test)
+                        runner = create_runner(myrace, field_index, fields, test)
                         if runner is not None and wr.search(runner.club):
                             runners.append(runner)
         except:
@@ -216,8 +244,9 @@ def parse_race(page, race, test):
     return runners
 
 
-def get_results(race, base_url, test):
-    page = scr_utils.getpage(race.url, f"ukresults {race.event}")
+def get_results(race, test):
+    race_url = f"{race.base_url}/{race.year}/{race.url}"
+    page = scr_utils.getpage(race_url, f"ukresults {race.event}")
     if page:
         # logger.info(f"Parsing {race.event} - {race.date}")
         runners = parse_race(page, race, test)
@@ -240,7 +269,9 @@ def parse_race_row(row, year, from_date, to_date, base_url):
             race = result.Race()
             race.date = race_date
             race.event = name
-            race.url = f"{base_url}/{year}/{link}"
+            race.year = year
+            race.base_url = base_url
+            race.url = link
             return race
     except:
         return None
@@ -280,6 +311,6 @@ def collect_result(base_url, weeks, test):
             races = get_races(page, year, from_date, to_date, base_url)
             logger.info(f"Retrieving the individual race pages; {len(races)} in total")
             for race in races:
-                my_result = get_results(race, base_url, test)
+                my_result = get_results(race, test)
                 results.extend(my_result) if my_result else None
     return results

@@ -41,3 +41,5 @@ class Race():
     distance: str = ''
     type: str = ''
     winningtime: str = ''
+    year: str = ''
+    base_url: str = ''
