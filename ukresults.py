@@ -41,6 +41,26 @@ def find_name_index(header_fields):
     return index
 
 
+def find_firstname_index(header_fields):
+    index = None
+    firstname = re.compile('firstname',flags=re.I)
+    for field in header_fields:
+        if firstname.fullmatch(field):
+            index = header_fields.index(field)
+            break
+    return index
+
+
+def find_surname_index(header_fields):
+    index = None
+    surname = re.compile('surname',flags=re.I)
+    for field in header_fields:
+        if surname.fullmatch(field):
+            index = header_fields.index(field)
+            break
+    return index
+
+
 def find_club_index(header_fields):
     # 11. find 'Club', 'Club / Sponsor', 'Club Name', 'Team', 'Team Name'. If both Club and Team then Club prevails
     index = None
@@ -143,6 +163,8 @@ def find_indices_from_header_fields(header_fields):
     result['pos'] = 0 if header_fields and 'pos' in header_fields[0].lower() else None
     result['bib'] = find_bib_index(header_fields)
     result['name'] = find_name_index(header_fields)
+    result['firstname'] = find_firstname_index(header_fields)
+    result['surname'] = find_surname_index(header_fields)
     result['club'] = find_club_index(header_fields)
     result['male'] = find_male_index(header_fields)
     result['female'] = find_female_index(header_fields)
@@ -184,6 +206,8 @@ def create_runner(race, field_index, fields, test):
         if index is not None:
             val = fields[index].text
             setattr(runner,key,val)
+    if not runner.name:
+        runner.name = f'{runner.firstname} {runner.surname}'
     if runner.pos == '1':
         race.winningtime = runner.time
     runner.winningtime = race.winningtime

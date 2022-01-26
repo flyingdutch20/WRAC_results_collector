@@ -7,6 +7,8 @@ class Result:
     pos: str = ''
     bib: str = ''
     name: str = ''
+    firstname: str = ''
+    surname: str = ''
     club: str = ''
     gender: str = ''
     age: str = ''
