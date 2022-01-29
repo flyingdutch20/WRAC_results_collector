@@ -4,7 +4,7 @@ import result
 
 class TestResult():
     def test_access_result(self):
-        res = result.Result('1','123','Jopie','WRAC','M','25','MSEN','22/12/2021','W10K','','Wetherby','10k','',run='3600')
+        res = result.Result('1','123','Jopie','','','WRAC','M','25','MSEN','22/12/2021','W10K','','Wetherby','10k','',run='3600')
         assert res.pos == '1'
         assert res.bib == '123'
         assert res.name == 'Jopie'

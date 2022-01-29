@@ -134,16 +134,63 @@ def find_category_index(header_fields):
             break
     return index
 
+def find_run1_index(header_fields):
+    index = None
+    t1 = re.compile('run1|run 1',flags=re.I)
+    for field in header_fields:
+        if t1.search(field):
+            index = header_fields.index(field)
+            break
+    return index
+
+
+def find_t1_index(header_fields):
+    index = None
+    t1 = re.compile('t1',flags=re.I)
+    for field in header_fields:
+        if t1.search(field):
+            index = header_fields.index(field)
+            break
+    return index
+
+
+def find_bike_index(header_fields):
+    index = None
+    bike = re.compile('bike',flags=re.I)
+    for field in header_fields:
+        if bike.search(field):
+            index = header_fields.index(field)
+            break
+    return index
+
+
+def find_t2_index(header_fields):
+    index = None
+    t2 = re.compile('t2',flags=re.I)
+    for field in header_fields:
+        if t2.search(field):
+            index = header_fields.index(field)
+            break
+    return index
+
+def find_run2_index(header_fields):
+    index = None
+    t2 = re.compile('run2|run 2',flags=re.I)
+    for field in header_fields:
+        if t2.search(field):
+            index = header_fields.index(field)
+            break
+    return index
 
 def find_time_index(header_fields):
     # Time, Net Time, Finish Time, Chip Time, Gun Time
     # 9. find 'Time', 'TIME', 'Net Time', 'Finish Time', 'Chip Time'. If multiple, then order 'Chip Time', 'Net Time', 'Finish Time', 'Time'
-    # triathlon: 'Total Time'
+    # duathlon/triathlon: 'Total Time', 'Total', 'Overall'
     index = None
     chip = re.compile('chip time|chiptime',flags=re.I)
     net = re.compile('net time|nettime',flags=re.I)
     finish = re.compile('finish time|finishtime',flags=re.I)
-    tottime = re.compile('total time|totaltime',flags=re.I)
+    tottime = re.compile('total time|totaltime|total|overall',flags=re.I)
     time = re.compile('time',flags=re.I)
     gun = re.compile('gun time|guntime',flags=re.I)
     keys = [chip,net,finish,tottime,time,gun]
@@ -169,6 +216,11 @@ def find_indices_from_header_fields(header_fields):
     result['male'] = find_male_index(header_fields)
     result['female'] = find_female_index(header_fields)
     result['category'] = find_category_index(header_fields)
+    result['run1'] = find_run1_index(header_fields)
+    result['t1'] = find_t1_index(header_fields)
+    result['bike'] = find_bike_index(header_fields)
+    result['t2'] = find_t2_index(header_fields)
+    result['run2'] = find_run2_index(header_fields)
     result['time'] = find_time_index(header_fields)
     return result
 

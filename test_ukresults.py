@@ -22,7 +22,7 @@ headerrow = '<th><a href="#" class="sortheader" onclick="ts_resortTable(this);re
 def test_create_field_index_from_header():
     row = bs(headerrow, 'html.parser')
     fields = ukr.create_field_index_from_header(row, False)
-    assert len(fields) == 8
+    assert len(fields) == 15
 
 """
 get_races scenarios
@@ -50,7 +50,7 @@ def test_parse_race_line():
     bs_line = bs(line, "html.parser")
     my_race = ukr.parse_race_row(bs_line, 2021, date.fromisoformat("2021-01-01"), date.fromisoformat("2021-12-31"), "/base_url")
     assert my_race.date == date.fromisoformat("2021-04-05")
-    assert my_race.url == "/base_url/2021/fast5kapra.html"
+    assert my_race.url == "fast5kapra.html"
     assert my_race.event == "Fast 5k Races, Three Sisters Circuit, Wigan, Lancashire"
 
 

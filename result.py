@@ -20,9 +20,11 @@ class Result:
     distance: str = ''  # 5k, 5M, 10k, 1/2 marathon, marathon, sprint, olympic
     comment: str = ''
     swim: str = ''
+    run1: str = ''
     t1: str = ''
     bike: str = ''
     t2: str = ''
+    run2: str = ''
     run: str = ''
     time: str = ''
     winningtime: str = ''
