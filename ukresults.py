@@ -218,7 +218,7 @@ def create_runner(race, field_index, fields, test):
 def multi_races_page(bs, race, test):
     runners = []
     multi_races_tables = bs.findAll("table")
-    if len(multi_races_tables) > 1:
+    if len(multi_races_tables) != 1:
         return runners
     race_rows = multi_races_tables[0].findAll("tr")
     single = True
@@ -246,7 +246,7 @@ def multi_races_page(bs, race, test):
 def parse_race(page, myrace, test):
     runners = []
     bs = BeautifulSoup(page, "html.parser")
-    runners.append(multi_races_page(bs, myrace, test))
+    runners.extend(multi_races_page(bs, myrace, test))
     all_text = bs.text
     wr = re.compile('wrac|wetherby', flags=re.I)
     if wr.search(all_text):
@@ -333,7 +333,7 @@ def collect_result(base_url, weeks, test):
         page = scr_utils.getpage(url[1], f"ukresults index {year}")
         if page:
             races = get_races(page, year, from_date, to_date, base_url)
-            logger.info(f"Retrieving the individual race pages; {len(races)} in total")
+            logger.info(f"Retrieving the individual race pages for {year}; {len(races)} in total")
             for race in races:
                 my_result = get_results(race, test)
                 results.extend(my_result) if my_result else None

@@ -51,8 +51,8 @@ def mail_output(output):
 def find_results(test, mail, weeks):
     logger.info(f"Collecting for {weeks} weeks. Test: {test}, mail: {mail}")
     results = []
-#    logger.info("Collecting from Racebest ...")
-#    results.extend(racebest.collect_result(config.racebest_base_url(), weeks, test))
+    logger.info("Collecting from Racebest ...")
+    results.extend(racebest.collect_result(config.racebest_base_url(), weeks, test))
     logger.info("Collecting from UKresults ...")
     results.extend(ukresults.collect_result(config.ukresults_base_url(), weeks, test))
 #    logger.info("Collecting from Runbritain ...")
