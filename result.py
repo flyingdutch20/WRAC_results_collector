@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from dataclasses import asdict
+from dataclasses import dataclass, asdict, field
+from typing import List
 
 
 @dataclass
-class Result:
+class Participant:
     pos: str = ''
     bib: str = ''
     name: str = ''
@@ -31,7 +31,7 @@ class Result:
 
     @staticmethod
     def fields():
-        return Result.__dict__.keys()
+        return Participant.__dict__.keys()
 
     def to_dict(self):
         return asdict(self)
@@ -70,13 +70,13 @@ class Race():
     winningtime: str = ''
     year: str = ''
     base_url: str = ''
-    runners: list[Result]
+    participants: List = field(default_factory=lambda: [Participant])
 
     def duathlon(self):
-        return True if self.runners and self.runners[0].duathlon() else False
+        return True if self.participants and self.participants[0].duathlon() else False
 
     def triathlon(self):
-        return True if self.runners and self.runners[0].triathlon() else False
+        return True if self.participants and self.participants[0].triathlon() else False
 
     def tableheaderoutput(self):
         tabledef = '<div class="table-1"><table width="100%"><thead>'
@@ -93,9 +93,9 @@ class Race():
 
     def html_race_output(self):
         output = ""
-        if self.runners:
+        if self.participants:
             output = f"<h3><b>{self.date} - {self.event}</b></h3>{self.tableheaderoutput()}"
-            for runner in self.runners:
+            for runner in self.participants:
                 output += runner.tableoutput()
             output += self.tableend()
         return output

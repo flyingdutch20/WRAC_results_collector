@@ -247,26 +247,26 @@ def create_field_index_from_header(headerrow, test):
     field_index = find_indices_from_header_fields(header_fields)
     return field_index
 
-def create_runner(race, field_index, fields, test):
-    runner = result.Result()
-    runner.date = race.date
-    runner.race = race.event
-    runner.distance = race.distance
-    runner.racetype = race.type
-    runner.location = race.location
+def create_participant(race, field_index, fields, test):
+    participant = result.Participant()
+    participant.date = race.date
+    participant.race = race.event
+    participant.distance = race.distance
+    participant.racetype = race.type
+    participant.location = race.location
     for key in field_index.keys():
         index = field_index[key]
         if index is not None:
             val = fields[index].text
-            setattr(runner,key,val)
-    if runner.pos == '1':
-        race.winningtime = runner.time
-    runner.winningtime = race.winningtime
-    return runner
+            setattr(participant,key,val)
+    if participant.pos == '1':
+        race.winningtime = participant.time
+    participant.winningtime = race.winningtime
+    return participant
 
 def parse_race(page, race, test=False):
     #the test parameter will extract bits of the pages and store them on disk as test sets
-    runners = []
+    participants = []
     bs = BeautifulSoup(page, "html.parser")
     all_text = bs.text
     wr = re.compile('wrac|wetherby', flags=re.I)
@@ -281,12 +281,12 @@ def parse_race(page, race, test=False):
                 for bs_row in rows:
                     fields = bs_row.findAll("td")
                     if fields:
-                        runner = create_runner(race, field_index, fields, test)
-                        if runner is not None and wr.search(runner.club):
-                            runners.append(runner)
+                        participant = create_participant(race, field_index, fields, test)
+                        if participant is not None and wr.search(participant.club):
+                            participants.append(participant)
         except:
             None
-    return runners
+    return participants
 
 def get_results(race, base_url, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
@@ -294,8 +294,8 @@ def get_results(race, base_url, test):
     page = scr_utils.getpage(url, f"racebest race {race.event}")
     if page:
         #logger.info(f"Parsing {race.event} - {race.date}")
-        runners = parse_race(page, race, test)
-        return runners
+        participants = parse_race(page, race, test)
+        return participants
 
 
 def get_races(page, from_date):
@@ -313,14 +313,18 @@ def get_races(page, from_date):
 
 def collect_result(base_url, weeks, test):
     #the test parameter will extract bits of the pages and store them on disk as test sets
-    results = []
+    #results = []
+    races = []
     logger.info("Retrieving the index page ...")
     page = scr_utils.getpage(base_url + '/results', "racebest index")
     if page:
         from_date = scr_utils.find_from_date(weeks, date.today())
-        races = get_races(page, from_date)
+        races.extend(get_races(page, from_date))
         logger.info(f"Retrieving the individual race pages; {len(races)} in total")
         for race in races:
             my_result = get_results(race, base_url, test)
-            results.extend(my_result) if my_result else None
-    return results
+            if my_result:
+                race.participants = my_result
+                #results.extend(my_result)
+    #return results
+    return races

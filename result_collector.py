@@ -42,6 +42,8 @@ logger.error('Error message should go everywhere')
 
 def create_output(results):
     output.output_as_csv(results)
+    output.output_as_pdf(results)
+    output.output_as_html_table(results)
     #TODO return the file path
 
 def mail_output(output):

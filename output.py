@@ -18,12 +18,14 @@ if not os.path.exists(output_path):
 def output_as_csv(results):
     filename = basename + '.csv'
     with open(filename, mode='w', newline='') as csv_file:
-        fieldnames = result.Result.fields()
+        fieldnames = result.Participant.fields()
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
         writer.writeheader()
-        for line in results:
-            writer.writerow(line.to_dict())
+        for race in results:
+            for line in race.participants:
+                #writer.writerow(line.to_dict())
+                pass
         return filename
 
 def output_as_pdf(results):
@@ -38,8 +40,8 @@ def output_as_pdf(results):
     for race in results:
         pdf.cell(0, 10, f"{race.date} - {race.event} - Winning time: {race.winningtime}", 0, 1)
         pdf.set_font('NotoSans', '', 12)
-        for runner in race.runners:
-            pdf.cell(0, 7, runner.textoutput, 0, 1)
+        for participant in race.participants:
+            pdf.cell(0, 7, participant.textoutput, 0, 1)
     pdf.output(filename, 'F')
     return filename
 

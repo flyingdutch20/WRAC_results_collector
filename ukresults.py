@@ -246,38 +246,38 @@ def create_field_index_from_header(headerrow, test):
     return field_index
 
 
-def create_runner(race, field_index, fields, test):
-    runner = result.Result()
-    runner.date = race.date
-    runner.race = race.event
-    runner.distance = race.distance
-    runner.racetype = race.type
-    runner.location = race.location
+def create_participant(race, field_index, fields, test):
+    participant = result.Participant()
+    participant.date = race.date
+    participant.race = race.event
+    participant.distance = race.distance
+    participant.racetype = race.type
+    participant.location = race.location
     for key in field_index.keys():
         index = field_index[key]
         if index is not None:
             val = fields[index].text
-            setattr(runner,key,val)
-    if not runner.name:
-        runner.name = f'{runner.firstname} {runner.surname}'
-    if runner.pos == '1':
-        race.winningtime = runner.time
-    runner.winningtime = race.winningtime
-    if runner.category[0] in 'MF':
-        runner.gender = runner.category[0]
-    return runner
+            setattr(participant,key,val)
+    if not participant.name:
+        participant.name = f'{participant.firstname} {participant.surname}'
+    if participant.pos == '1':
+        race.winningtime = participant.time
+    participant.winningtime = race.winningtime
+    if participant.category[0] in 'MF':
+        participant.gender = participant.category[0]
+    return participant
 
 def multi_races_page(bs, race, test):
-    runners = []
+    participants = []
     multi_races_tables = bs.findAll("table")
     if len(multi_races_tables) != 1:
-        return runners
+        return participants
     race_rows = multi_races_tables[0].findAll("tr")
     single = True
     if len(race_rows) < 20:
         for row in race_rows:
             if len(row.findAll("td")) > 1:
-                return runners
+                return participants
     for row in race_rows:
         try:
             a = row.find("a")
@@ -290,15 +290,15 @@ def multi_races_page(bs, race, test):
             subrace.year = race.year
             subrace.base_url = race.base_url
             subrace_results = get_results(subrace, test)
-            runners.extend(subrace_results)
+            participants.extend(subrace_results)
         except:
             None
-    return runners
+    return participants
 
 def parse_race(page, myrace, test):
-    runners = []
+    participants = []
     bs = BeautifulSoup(page, "html.parser")
-    runners.extend(multi_races_page(bs, myrace, test))
+    participants.extend(multi_races_page(bs, myrace, test))
     all_text = bs.text
     wr = re.compile('wrac|wetherby', flags=re.I)
     if wr.search(all_text):
@@ -312,12 +312,12 @@ def parse_race(page, myrace, test):
                 for bs_row in rows:
                     fields = bs_row.findAll("td")
                     if fields:
-                        runner = create_runner(myrace, field_index, fields, test)
-                        if runner is not None and wr.search(runner.club):
-                            runners.append(runner)
+                        participant = create_participant(myrace, field_index, fields, test)
+                        if participant is not None and wr.search(participant.club):
+                            participants.append(participant)
         except:
             None
-    return runners
+    return participants
 
 
 def get_results(race, test):
@@ -325,8 +325,8 @@ def get_results(race, test):
     page = scr_utils.getpage(race_url, f"ukresults {race.event}")
     if page:
         # logger.info(f"Parsing {race.event} - {race.date}")
-        runners = parse_race(page, race, test)
-        return runners
+        participants = parse_race(page, race, test)
+        return participants
 
 
 def parse_race_row(row, year, from_date, to_date, base_url):
@@ -375,7 +375,8 @@ def get_index_page_urls(base_url, from_date, to_date):
 
 
 def collect_result(base_url, weeks, test):
-    results = []
+    #results = []
+    races = []
     logger.info("Retrieving the index page(s) ...")
     to_date = date.today()
     from_date = scr_utils.find_from_date(weeks, to_date)
@@ -384,9 +385,11 @@ def collect_result(base_url, weeks, test):
         year = url[0]
         page = scr_utils.getpage(url[1], f"ukresults index {year}")
         if page:
-            races = get_races(page, year, from_date, to_date, base_url)
+            races.extend(get_races(page, year, from_date, to_date, base_url))
             logger.info(f"Retrieving the individual race pages for {year}; {len(races)} in total")
             for race in races:
                 my_result = get_results(race, test)
-                results.extend(my_result) if my_result else None
-    return results
+                race.participants = my_result
+                #results.extend(my_result) if my_result else None
+    #return results
+    return races
